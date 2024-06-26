@@ -16,43 +16,41 @@
   
 - **튜닝예제2.  옵티마이져가 뭔지 알아야해요 !**: 📄 [노트](https://www.notion.so/1-1-d64d7db2641d49f59318f017c2ed4c05)
   
-- **튜닝예제3. 실행계획의 종류 2가지를 알아야합니다 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제3. 실행계획의 종류 2가지를 알아야합니다 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C3.%20%EC%8B%A4%ED%96%89%EA%B3%84%ED%9A%8D%EC%9D%98%20%EC%A2%85%EB%A5%98%202%EA%B0%80%EC%A7%80%EB%A5%BC%20%EC%95%8C%EC%95%84%EC%95%BC%ED%95%A9%EB%8B%88%EB%8B%A4..txt)
 
-- **튜닝예제4.  where 절에 인덱스 컬럼을 가공하지 마세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제4.  where 절에 인덱스 컬럼을 가공하지 마세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C4.%20%20where%20%EC%A0%88%EC%97%90%20%EC%9D%B8%EB%8D%B1%EC%8A%A4%20%EC%BB%AC%EB%9F%BC%EC%9D%84%20%EA%B0%80%EA%B3%B5%ED%95%98%EC%A7%80%20%EB%A7%88%EC%84%B8%EC%9A%94%20!.txt)
 
-- **튜닝예제3. 실행계획의 종류 2가지를 알아야합니다 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제5. having 절에 일반 검색조건을 쓰지 마세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C5.%20having%20%EC%A0%88%EC%97%90%20%EC%9D%BC%EB%B0%98%20%EA%B2%80%EC%83%89%EC%A1%B0%EA%B1%B4%EC%9D%84%20%EC%93%B0%EC%A7%80%20%EB%A7%88%EC%84%B8%EC%9A%94..txt)
 
-- **튜닝예제5. having 절에 일반 검색조건을 쓰지 마세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제6. where 에 인덱스 컬럼 가공이 불가피하다면 함수 기반 인덱스 생성하세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C6.%20where%20%EC%97%90%20%EC%9D%B8%EB%8D%B1%EC%8A%A4%20%EC%BB%AC%EB%9F%BC%20%EA%B0%80%EA%B3%B5%EC%9D%B4%20%EB%B6%88%EA%B0%80%ED%94%BC%ED%95%98%EB%8B%A4%EB%A9%B4%20%ED%95%A8%EC%88%98%EA%B8%B0%EB%B0%98%20%EC%9D%B8%EB%8D%B1%EC%8A%A4%EB%A5%BC%20%EC%83%9D%EC%84%B1%ED%95%98%EC%84%B8%EC%9A%94%20!.txt)
 
-- **튜닝예제6. where 에 인덱스 컬럼 가공이 불가피하다면 함수 기반 인덱스 생성하세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제7. 암시적 형변환에 주의하세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C7.%20%20%EC%95%94%EC%8B%9C%EC%A0%81%20%ED%98%95%EB%B3%80%ED%99%98%EC%97%90%20%EC%A3%BC%EC%9D%98%ED%95%98%EC%84%B8%EC%9A%94%20!.txt)
 
-- **튜닝예제7. 암시적 형변환에 주의하세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제8. Order by 를 통한 과도한 정렬작업을 피하세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C8.%20%20order%20by%20%EB%A5%BC%20%ED%86%B5%ED%95%9C%20%EA%B3%BC%EB%8F%84%ED%95%9C%20%EC%A0%95%EB%A0%AC%EC%9E%91%EC%97%85%EC%9D%84%20%ED%94%BC%ED%95%98%EC%84%B8%EC%9A%94%20!.txt)
 
-- **튜닝예제8. Order by 를 통한 과도한 정렬작업을 피하세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제9. 그룹함수 대신에 인덱스를 사용해서 SQL을 튜닝하세요**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C9.%20%EA%B7%B8%EB%A3%B9%ED%95%A8%EC%88%98%20%EB%8C%80%EC%8B%A0%EC%97%90%20%EC%9D%B8%EB%8D%B1%EC%8A%A4%EB%A5%BC%20%EC%82%AC%EC%9A%A9%ED%95%B4%EC%84%9C%20SQL%EC%9D%84%20%ED%8A%9C%EB%8B%9D%ED%95%98%EC%84%B8%EC%9A%94..txt)
 
-- **튜닝예제9. 그룹함수 대신에 인덱스를 사용해서 SQL을 튜닝하세요**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제10. 인덱스를 엑세스 하지 못하는 검색조건을 알아야해요**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C10.%20%EC%9D%B8%EB%8D%B1%EC%8A%A4%EB%A5%BC%20%EC%97%91%EC%84%B8%EC%8A%A4%20%ED%95%98%EC%A7%80%20%EB%AA%BB%ED%95%98%EB%8A%94%20%EA%B2%80%EC%83%89%EC%A1%B0%EA%B1%B4%EC%9D%84%20%EC%95%8C%EC%95%84%EC%95%BC%ED%95%B4%EC%9A%94.txt)
 
-- **튜닝예제10. 인덱스를 엑세스 하지 못하는 검색조건을 알아야해요**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제11. full table scan 을 할 수 밖에 없다면 full table scan 이 빠르게 되도록 튜닝하세요**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C11.%20full%20table%20scan%20%EC%9D%84%20%ED%95%A0%20%EC%88%98%20%EB%B0%96%EC%97%90%20%EC%97%86%EB%8B%A4%EB%A9%B4%20full%20table%20scan%20%EC%9D%B4%20%EB%B9%A0%EB%A5%B4%EA%B2%8C%20%EB%90%98%EB%8F%84%EB%A1%9D%20%ED%8A%9C%EB%8B%9D%ED%95%98%EC%84%B8%EC%9A%94.txt)
 
-- **튜닝예제11. full table scan 을 할 수 밖에 없다면 full table scan 이 빠르게 되도록 튜닝하세요**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제12. 인덱스를 탈 수 있도록 힌트를 사용하세요.**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C12.%20%EC%9D%B8%EB%8D%B1%EC%8A%A4%EB%A5%BC%20%ED%83%88%20%EC%88%98%20%EC%9E%88%EB%8F%84%EB%A1%9D%20%ED%9E%8C%ED%8A%B8%EB%A5%BC%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%84%B8%EC%9A%94.txt)
 
-- **튜닝예제12. 인덱스를 탈 수 있도록 힌트를 사용하세요.**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제13. 훌륭한 인덱스 2개를 같이 사용하여 시너지 효과를 볼 수 있어요**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C13.%20%ED%9B%8C%EB%A5%AD%ED%95%9C%20%EC%9D%B8%EB%8D%B1%EC%8A%A4%202%EA%B0%9C%EB%A5%BC%20%EA%B0%99%EC%9D%B4%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%97%AC%20%EC%8B%9C%EB%84%88%EC%A7%80%20%ED%9A%A8%EA%B3%BC%EB%A5%BC%20%EB%B3%BC%20%EC%88%98%20%EC%9E%88%EC%96%B4%EC%9A%94.txt)
 
-- **튜닝예제13. 훌륭한 인덱스 2개를 같이 사용하여 시너지 효과를 볼 수 있어요**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제14. 테이블 랜덤 엑세스를 줄이기 위해 결합 컬럼 인덱스를 사용하세요**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C14.%20%ED%85%8C%EC%9D%B4%EB%B8%94%20%EB%9E%9C%EB%8D%A4%20%EC%97%91%EC%84%B8%EC%8A%A4%EB%A5%BC%20%EC%A4%84%EC%9D%B4%EA%B8%B0%20%EC%9C%84%ED%95%B4%20%EA%B2%B0%ED%95%A9%20%EC%BB%AC%EB%9F%BC%20%EC%9D%B8%EB%8D%B1%EC%8A%A4%EB%A5%BC%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%84%B8%EC%9A%94.txt)
 
-- **튜닝예제14. 테이블 랜덤 엑세스를 줄이기 위해 결합 컬럼 인덱스를 사용하세요**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제15. 결합 컬럼 인덱스 구성시 컬럼순서가 중요합니다**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C15.%20%EA%B2%B0%ED%95%A9%20%EC%BB%AC%EB%9F%BC%20%EC%9D%B8%EB%8D%B1%EC%8A%A4%20%EA%B5%AC%EC%84%B1%EC%8B%9C%20%EC%BB%AC%EB%9F%BC%EC%88%9C%EC%84%9C%EA%B0%80%20%EC%A4%91%EC%9A%94%ED%95%A9%EB%8B%88%EB%8B%A4.txt)
 
-- **튜닝예제15. 결합 컬럼 인덱스 구성시 컬럼순서가 중요합니다**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제16. index skip scan 을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C16.%20index%20skip%20scan%20%EC%9D%84%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%84%B8%EC%9A%94%20!.txt)
 
-- **튜닝예제16. index skip scan 을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제17. index full scan 을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C17.%20index%20full%20scan%20%EC%9D%84%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%84%B8%EC%9A%94%20!.txt)
 
-- **튜닝예제17. index full scan 을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제18. index fast full scan 을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C18.%20index%20fast%20full%20scan%20%EC%9D%84%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%84%B8%EC%9A%94%20!.txt)
 
-- **튜닝예제18. index fast full scan 을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제19. index bitmap merge scan 을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C19.%20index%20bitmap%20merge%20scan%20%EC%9D%84%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%84%B8%EC%9A%94%20!.txt)
 
-- **튜닝예제19. index bitmap merge scan 을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
-
-- **튜닝예제20. index unique scan을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제20. index unique scan을 사용하세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C20.%20index%20unique%20scan%EC%9D%84%20%EC%82%AC%EC%9A%A9%ED%95%98%EC%84%B8%EC%9A%94%20!.txt)
 
 - **튜닝예제21. 조인문장을 튜닝할 때 조인 순서 튜닝이 중요합니다.**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
 
