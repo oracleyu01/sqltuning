@@ -1,0 +1,165 @@
+
+▣ 튜닝예제31.  선택적 조인을 하면서 조인의 성능을 높일 수 있어요 
+
+
+ -- 환경구성  
+
+ @demo
+
+-- emp 테이블에 emp_kind 라는 컬럼을 추가하는데 default 값을 1로 해서 추가함
+-- default 값을 1로 주겠다는것은 emp_kind에 값을 입력 안하면 무조건 1로
+-- 값이 할당되는것입니다.
+
+ alter  table  emp
+    add  emp_kind   varchar2(1)  default  1  not  null;
+
+
+-- 사원번호가 홀수이면 정규직으로 하고 짝수이면 비정규직으로 emp_kind 수정
+
+ update  emp
+   set  emp_kind =  case  when  mod(empno,2) = 1  then  1
+                            else  2  end ;
+
+ select  ename, emp_kind  from  emp;     
+ --- emp_kind 가 1이면 정규직 , emp_kind 가 2이면 비정규직 
+
+
+ -- 정규직 사원 테이블 생성 
+ create  table  emp_kind1
+   as
+  select  empno, ename, sal + 200 as  office_sal
+       from  emp
+       where emp_kind ='1';
+
+ -- 비정규직 사원 테이블 생성 
+ create  table  emp_kind2
+   as
+  select  empno, ename, sal + 200 as  sal
+       from  emp
+       where emp_kind ='2';
+
+ -- primary key 제약을 각각 건다
+
+ alter  table  emp_kind1
+   add  constraint   pk_emp_kind1   primary  key(empno); 
+
+ alter  table  emp_kind2
+   add  constraint   pk_emp_kind2  primary  key(empno);
+
+-- emp 테이블에서 sal 컬럼을 삭제합니다.
+
+ alter  table  emp  
+   drop  column  sal ;
+
+select  * from  emp;
+select  * from  emp_kind1;
+select  * from  emp_kind2;  
+
+■ 실습1. (SQL전문가 시험 주관식 문제)  emp 와 emp_kind1 과 emp_kind2 테이블을
+           조인해서 사원번호가 7839 인 사원의 사원번호, 사원이름, 
+           정규직 사원 월급(office_sal),  비정규직 사원의 월급(sal) 을 출력하시오 !
+ 
+select  e.empno, e.ename,  k1.office_sal, k2.sal
+   from  emp  e,  emp_kind1   k1,  emp_kind2   k2
+   where  e.empno = k1.empno (+)
+      and  e.empno = k2.empno (+)
+      and  e.empno = 7839;  
+
+설명: 왜 위의 SQL에서는 아우터 조인 사인이 필요한가 ?  
+       아우터 조인 싸인을 안쓰면 출려 안됩니다. 왜냐하면 7839 사원이 정규직일지
+       비정규직일지 모르기 때문에 꼭 써야 출력이 되어집니다. 
+
+■ 실습2. 아래의 SQL의 실행계획을 확인해서 버퍼의 갯수를 몇개를 읽었는지 확인하시오
+
+select  /*+ gather_plan_statistics */ e.empno, e.ename,  k1.office_sal, k2.sal
+   from  emp  e,  emp_kind1   k1,  emp_kind2   k2
+   where  e.empno = k1.empno (+)
+      and  e.empno = k2.empno (+)
+      and  e.empno = 7839;  
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+버퍼의 갯수 ?  10개 
+
+7839가 정규직 사원인데 그럼 3개의 테이블을 조인할때 emp 와 정규직 사원 테이블하고
+는 조인 필요한데 비정규 사원 테이블과 조인이 필요하지는 않습니다.
+그런데 emp 와 비정규직 사원 테이블(emp_kind2) 와 조인을 했는지 확인해보세요 !
+
+실행계획을 보면 비정규직 사원 테이블과도 조인을 해서 버퍼의 갯수가 1 이상으로
+보이고 있습니다. 
+
+그래서 위의 SQL에 정규직 사원번호가 들어오면 비정규직 테이블하고는 조인되지
+않게 하고 비정규직 사원번호가 들어오면 정규직 사원 테이블하고는 조인되지 않게
+하려면 ?      
+
+   "선택적 조인을 하면 됩니다."
+
+■ 실습3. 위의 SQL을 선택적 조인 (상호 배타적 관계의 조인) 을 하게 하시오 ! 
+
+select  /*+ gather_plan_statistics */ e.empno, e.ename,  k1.office_sal, k2.sal
+   from  emp  e,  emp_kind1   k1,  emp_kind2   k2
+   where  decode(e.emp_kind, 1, e.empno ) = k1.empno (+)
+      and  decode(e.emp_kind, 2, e.empno ) = k2.empno (+)
+      and  e.empno = 7839;  
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+위와 같이 SQL을 작성해도 결과가 잘 출력되는지 확인하고 그리고 
+실행계획에서 버퍼의 갯수가 선택적 조인을 하기전과 어떤 차이가 있는지 확인하시오 !
+
+문제72. (SQL 전문가 주관식 문제) 아래의 환경을 만들고 아래의 SQL을 상호배타적
+         관계 조인되게 튜닝하시오 !
+
+@demo
+
+drop  table  dept_10;
+drop  table  dept_20;
+drop  table  dept_30;
+
+create   table  dept_10
+  as
+   select    empno,  sal*0.1  bonus_10
+      from  emp
+      where deptno = 10;
+
+create   table  dept_20
+  as
+   select    empno,  sal*0.2  bonus_20
+      from  emp
+      where deptno = 20;
+
+create   table  dept_30
+  as
+   select    empno,  sal*0.3  bonus_30
+      from  emp
+      where deptno = 30;
+
+alter  table  dept_10
+ add  constraint  dept_10_pk  primary  key(empno);
+
+alter  table  dept_20
+ add  constraint  dept_20_pk  primary  key(empno);
+
+alter  table  dept_30
+ add  constraint  dept_30_pk  primary  key(empno);
+
+select  e.empno, e.ename, d1.bonus_10, d2.bonus_20, d3.bonus_30
+  from  emp  e, dept_10  d1, dept_20  d2, dept_30  d3
+  where   e.empno = d1.empno (+)
+    and    e.empno = d2.empno (+)
+    and    e.empno = d3.empno (+) 
+    and    e.empno = 7788;
+
+
+튜닝후: 
+
+select  e.empno, e.ename, d1.bonus_10, d2.bonus_20, d3.bonus_30
+  from  emp  e, dept_10  d1, dept_20  d2, dept_30  d3
+  where   decode(e.deptno, 10, e.empno ) = d1.empno (+)
+    and    decode(e.deptno, 20, e.empno )= d2.empno (+)
+    and    decode(e.deptno, 30, e.empno )= d3.empno (+) 
+    and    e.empno = 7788;
+
+설명: 사원번호가 7788번인 사원은 부서번호가 20번이므로  조인 연결 조건중에
+        decode(e.deptno, 20, e.empno )= d2.empno (+) 만 작동됩니다. 
+  

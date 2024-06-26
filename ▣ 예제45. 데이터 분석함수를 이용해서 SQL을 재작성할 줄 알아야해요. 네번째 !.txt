@@ -1,0 +1,42 @@
+▣ 예제45. 데이터 분석함수를 이용해서 SQL을 재작성할 줄 알아야해요. 네번째 !
+
+■  실습예제1. 아래의 SQL을 튜닝하시오 !
+
+튜닝전: 
+  select a.deptno , a.empno, a.ename, a.sal, b.sal
+    from ( select rownum    no1, deptno, empno,ename,  sal
+                  from  ( select  deptno, empno, ename,  sal
+                                  from  emp
+                                  order by deptno, sal )    )  a,
+            ( select rownum  +1   no2, deptno, empno, ename, sal
+                 from  ( select  deptno, empno, ename, sal
+                                  from  emp
+                                  order by deptno,sal )  )   b
+ where  a.no1 = b.no2 (+)
+order by no1;
+
+튜닝전의 버퍼의 갯수는 14개
+
+튜닝후:   select deptno, empno, sal, lag(sal, 1)  over  ( order  by  deptno, sal ) as sal_lag
+               from   emp; 
+
+튜닝후의 버퍼의 갯수 7개
+
+문제89. 아래의 SQL을 튜닝하시오 !
+
+튜닝전:  select a.deptno , a.empno, a.ename, a.sal, b.sal
+    from ( select rownum    no1, deptno, empno,ename,  sal
+                  from  ( select  deptno, empno, ename,  sal
+                                  from  emp
+                                  order by deptno, sal )    )  a,
+            ( select rownum  - 1   no2, deptno, empno, ename, sal
+                 from  ( select  deptno, empno, ename, sal
+                                  from  emp
+                                  order by deptno,sal )  )   b
+ where  a.no1 = b.no2 (+)
+order by no1;
+
+그 다음행을 옆에 출력하고 있습니다.
+
+튜닝후:  select deptno, empno, sal,  lead(sal, 1 )  over  ( order by deptno, sal ) as sal_lead
+                 from   emp;

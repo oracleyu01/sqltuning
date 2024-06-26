@@ -1,0 +1,95 @@
+▣ 튜닝예제30. 3개 이상의 테이블을 조인할 때 조인 방법을 다양하게 조절할 줄 알아야해요
+
+■ 조인시 테이블 명칭
+
+실행계획                  NL 조인               HASH 조인            SORT MERGE 조인 
+
+위쪽 테이블          driving  table            hash  table            선행 테이블
+아래쪽 테이블       driven  table             probe  table          후행 테이블
+
+■ 3개의 테이블을 조인을 한다고 하면 
+
+        emp  ------------>   dept  ------------>  salgrade  
+                     ↑                       ↑
+                hash join                nl  join
+                 
+@demo
+
+ select  /*+  leading(e,d,s)  use_hash(d)  use_nl(s)  */   e.ename, d.loc, s.grade
+    from   emp   e,  dept   d,  salgrade   s
+    where  e.deptno  = d.deptno  
+      and   e.sal  between  s.losal   and  s.hisal;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제69.  위의 SQL이 아래와 같이 조인순서와 조인방법이 결정되겠금 힌트를 주시오
+
+ 조인순서:   salgrade  --------------->  emp ---------------------->  dept 
+                                     ↑                         ↑
+                           sort  merge  join         nested  loop  join 
+
+ select  /*+  leading(s,e,d)  use_merge(e)  use_nl(d)  */   e.ename, d.loc, s.grade
+    from   emp   e,  dept   d,  salgrade   s
+    where  e.deptno  = d.deptno  
+      and   e.sal  between  s.losal   and  s.hisal;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제70.  위의 SQL에서 부서위치가 DALLAS  의 데이터만 출력하시오
+            실전 튜닝을 해야한다면 ? 
+
+ select    e.ename, d.loc, s.grade
+    from   emp   e,  dept   d,  salgrade   s   -- 14건,  4건,  5건
+    where  e.deptno  = d.deptno  
+      and   e.sal  between  s.losal   and  s.hisal
+      and   d.loc='DALLAS';  -- 1건
+
+                         1건         5건
+ 조인순서:   dept ----> emp ---> salgrade
+                        ↑            ↑
+조인방법:       nl 조인          nl 조인
+
+그런데 만약에 다음과 같은 상황이면 ?
+
+                         1건         5만건
+ 조인순서:   dept ----> emp ---> salgrade
+                        ↑            ↑
+조인방법:       nl 조인         merge  조인
+
+만약에 방금 위와 같이 dept 와 emp 를 조인했을때 5만건이 결과 데이터로 
+생성되었다라고 가정하고 아래의 SQL의 힌트를 주시오 !
+
+ select  /*+ leading(d,e,s)  use_nl(e)  use_merge(s)  */  e.ename, d.loc, s.grade
+    from   emp   e,  dept   d,  salgrade   s   
+     where  e.deptno  = d.deptno  
+      and   e.sal  between  s.losal   and  s.hisal
+      and   d.loc='DALLAS';  
+
+ 6기 조은성 :  삼성관련 회계컨설팅 데이터 분석가---> 크몽 데이터 분석가 
+                  --> 쓱닷컴 데이터 엔지니어 
+
+문제71. 아래의 SQL의 조인 순서와 조인 방법을 결정하는데 다음과 같은 상황이라고
+           가정하고 조인순서와 조인방법을 결정하시오 !
+
+                 10만건                    12건 
+   salgrade ------------> emp -------------> dept
+
+  select   e.ename, d.loc,  s.grade
+    from  emp  e,  dept   d,  salgrade   s
+    where  e.deptno = d.deptno  
+      and  e.sal  between  s.losal  and  s.hisal ;
+
+답:
+
+                 10만건                    12건 
+   salgrade ------------> emp -------------> dept
+                    ↑                         ↑
+             sort  merge  join          nl 조인
+
+  select  /*+ leading(s,e,d)  use_merge(e) use_nl(d) */  e.ename, d.loc,  s.grade
+    from  emp  e,  dept   d,  salgrade   s
+    where  e.deptno = d.deptno  
+      and  e.sal  between  s.losal  and  s.hisal ;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+

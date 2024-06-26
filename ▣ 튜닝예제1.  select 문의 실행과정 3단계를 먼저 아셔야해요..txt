@@ -1,0 +1,75 @@
+
+▣▣ 튜닝예제1.  select 문의 실행과정 3단계를 먼저 아셔야해요.
+
+ 
+▣  select 문의 처리과정
+
+         노트북   ---------------------------------------------------->   서버실 
+
+         클라이언트                                                              서버
+         유져 프로세서 --------------------- SQL ------------------>    서버프로세서
+                            <----------------  결과물 -------------------
+   select  ename, sal
+     from  emp
+     where  ename='SCOTT'; 
+
+  1. 파싱(Parsing)  :   SQL을 기계어로 변환하는 작업
+  2. 실행(execute)  :   실행계획데로 검색하는 데이터를 DB 에서 찾는 과정
+  3. 패치(fetch)     :   DB에서 찾은 결과를 SQL을 수행한 유져 프로세서에게 전달
+
+문제1.  실제로 회사에 가면 내 노트북에서 회사 서버실에 오라클 데이터베이스에
+          어떻게 접속을 하는가 ? 
+
+      내 노트북 ---------------------------------------------------->  서버
+  
+         tnsnames.ora <---  내가 접속할 오라클 db의 정보를 등록해줍니다. 
+
+  C:\Users\ITWILL>  lsnrctl status
+
+D:\oracle19c\WINDOWS.X64_193000_db_home\network\admin\listener.ora
+
+   listener.ora  와  tnsnames.ora 
+
+ 윈도우 탐색기 -->  내pc 에서 오른쪽 마우스를 누르고 속성 ---> 고급 시스템 설정
+
+  ---> 환경변수   --> 아래쪽 시스템 변수에 새로 만들기  -->
+
+     변수 이름 : TNS_ADMIN
+     변수값 :  D:\app\client\ITWILL\product\19.0.0\client_2\network\admin
+
+ 그리고 sqldeveloper 를 다시 껐다가 켭니다. 
+
+문제2. 짝꿍 pc 의 오라클 데이터 베이스에 c##scott 유져로 접속하시오 !
+
+나의 tnsnames.ora 의 tns별칭의 이름을 내 영문 이니셜로 변경합니다.
+
+yys =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT =1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = xe)
+    )
+  )
+
+그리고 SQL developer 를 다시 껐다가 켜시오 !
+
+짝꿍의 tns 정보를 나의 tnsnames.ora  맨 밑에 적습니다. 
+
+yso =
+  (DESCRIPTION =
+    (ADDRESS = (PROTOCOL = TCP)(HOST = DESKTOP-D749SKO)(PORT = 1521))
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = xe)
+    )
+  )
+
+방화벽을 해제합니다. 
+
+다시 방화벽 설정하고 내 db 로 접속해주세요 ~
+
+만약 어느 회사에 db 분석을 하러 갔으면 담당자에게 db 에 접속할 수 있는
+tnsnames.ora 에 등록할 tns 정보를 주세요 ~  라고 애기하면 무슨말이 알아듣고
+알려줍니다. 
+

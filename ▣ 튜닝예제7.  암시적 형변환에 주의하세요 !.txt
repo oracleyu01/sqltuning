@@ -1,0 +1,169 @@
+▣▣ 튜닝예제7.  암시적 형변환에 주의하세요 !
+
+@demo
+create  index  emp_sal  on  emp(sal);
+
+튜닝전:  select  ename, sal
+             from  emp
+             where  sal  like  '30%';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+튜닝후:   create  index  emp_sal_tochar
+             on  emp( to_char(sal) );
+
+select  ename, sal
+             from  emp
+             where  sal  like  '30%';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제14. 아래의 환경을 만들고 아래의 SQL을 튜닝하시오 !
+
+drop  table  emp9000;
+
+create  table  emp9000
+( ename   varchar2(10),
+   sal    varchar2(10) );
+
+insert   into  emp9000  values('scott', '3000');
+insert   into  emp9000  values('smith', '1000');
+insert   into  emp9000  values('allen', '2000');
+commit;
+
+create  index emp9000_sal  on  emp9000(sal);
+
+튜닝전:  select  ename, sal
+              from  emp9000
+              where sal = 3000;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+튜닝후: select  ename, sal
+              from  emp9000
+              where sal = '3000';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+설명: SQL을 재작성할 수 있으면 SQL재작성하는게 먼저입니다. 
+       인덱스를 만드는것은 아주 값비싼 작업입니다. 
+
+현업 튜닝 사례
+
+튜닝 날짜  :  
+튜  너  :   유연수 차장
+튜닝 내용 :  8월 4일 16시 11분 부산지원 청구 1호기에서 DB FILE SCATTRED READ 대기 이벤트를 일으키면서 47초 이상 수행되는  SQL 발견하여 관련된 SQL 튜닝. (튜닝전 47초 --> 튜닝후 1초)
+
+
+☞  문제의 SQL 을 수행한 프로그램 정보및 DB 유져정보
+
+DB SCHEMA :  HIRA_LINK
+OS USER : BWJF01
+SYSTEM ID: ORA8
+MACHINE : bonbu01
+PROGRAM :  @bonbu01 (TNS V1-V3)
+
+
+
+☞  튜닝전 SQL 과 TRACE 정보
+
+
+SELECT "RECV_NO" ,
+       "RECV_YYYY" ,
+       "BRCH_CD" ,
+       "RECV_DATA_TYPE" ,
+       "YKIHO" ,
+       "DMD_TYPE_CD" ,
+       "PAY_SYS_TYPE" ,
+       "RECV_DT" ,
+       "EDPS_RECV_CLOS_YN" ,
+       "DIAG_YYYYMM" ,
+       "TOT_DMD_CNT" ,
+       "RETN_TYPE"
+FROM   "TBJFC02" "TBJFC02"
+WHERE  TO_NUMBER( "RECV_DT" ) >=20060724
+AND    TO_NUMBER( "RECV_DT" ) <=20060805
+AND    "RECV_DATA_TYPE" ='1'
+AND ( "DMD_TYPE_CD" ='2'
+        OR "DMD_TYPE_CD" ='3' )
+AND    "PAY_SYS_TYPE" ='A'
+AND    "RETN_TYPE" IS NULL
+AND    "EDPS_RECV_CLOS_YN" ='Y'
+AND    SUBSTR( "YKIHO" , 3 , 1 ) <>'9';
+
+call     count       cpu    elapsed       disk      query    current       rows        mis   Wait Ela
+------- ------  -------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
+Parse        1      0.00       0.01          0          0          0          0          0       0.00
+Exec         1      0.00       0.00          0          0          0          0          0       0.00
+Fetch      356     19.00      47.64      70958      75211         63       8884          0      46.52
+------- ------  -------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
+Total      358     19.00      47.65      70958      75211         63       8884          0      46.52
+
+
+
+Event waited on                             Count Zero Ela     Elapse   AVG(Ela)   MAX(Ela)   Blocks
+---------------------------------------- -------- -------- ---------- ---------- ---------- --------
+db file sequential read                       501      450       0.57       0.00       0.05      501
+SQL*Net message to client                     357        0       0.00       0.00       0.00        0
+SQL*Net message from client                   357        0      11.55       0.03       0.22        0
+db file scattered read                       9847     6937      33.82       0.00       0.09    70457  
+file open                                       9        0       0.00       0.00       0.00        0
+SQL*Net more data to client                   227        0       0.14       0.00       0.01        0
+latch free                                     26        0       0.52       0.02       0.02        0
+
+Rows       Row Source Operation
+---------- ---------------------------------------------------
+      8884 TABLE ACCESS FULL TBJFC02 
+
+
+
+☞  튜닝후 SQL 과 TRACE 정보
+
+SELECT "RECV_NO" ,
+       "RECV_YYYY" ,
+       "BRCH_CD" ,
+       "RECV_DATA_TYPE" ,
+       "YKIHO" ,
+       "DMD_TYPE_CD" ,
+       "PAY_SYS_TYPE" ,
+       "RECV_DT" ,
+       "EDPS_RECV_CLOS_YN" ,
+       "DIAG_YYYYMM" ,
+       "TOT_DMD_CNT" ,
+       "RETN_TYPE"
+FROM   "TBJFC02" "TBJFC02"
+WHERE      "RECV_DT"  >= '20060724'  
+AND        "RECV_DT"  <= '20060805'
+AND    "RECV_DATA_TYPE" ='1'
+AND ( "DMD_TYPE_CD" ='2'
+        OR "DMD_TYPE_CD" ='3' )
+AND    "PAY_SYS_TYPE" ='A'
+AND    "RETN_TYPE" IS NULL
+AND    "EDPS_RECV_CLOS_YN" ='Y'
+AND    SUBSTR( "YKIHO" , 3 , 1 ) <>'9';
+
+
+
+
+call     count       cpu    elapsed       disk      query    current       rows        mis   Wait Ela
+------- ------  -------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
+Parse        1      0.01       0.04          0          9          0          0          1       0.00
+Exec         1      0.00       0.00          0          0          0          0          0       0.00
+Fetch      356      0.75       1.08         12       4841          0       8884          0      11.72
+------- ------  -------- ---------- ---------- ---------- ---------- ---------- ---------- ----------
+Total      358      0.76       1.12         12       4850          0       8884          1      11.72
+
+Event waited on                             Count Zero Ela     Elapse   AVG(Ela)   MAX(Ela)   Blocks
+---------------------------------------- -------- -------- ---------- ---------- ---------- --------
+db file sequential read                        12        9       0.04       0.00       0.02       12
+global cache cr request                        36        0       0.11       0.00       0.01        0
+SQL*Net message to client                     357        0       0.01       0.00       0.01        0
+SQL*Net message from client                   357        0      11.53       0.03       0.38        0
+file open                                       3        0       0.00       0.00       0.00        0
+SQL*Net more data to client                   234        0       0.09       0.00       0.01        0
+latch free                                      2        0       0.04       0.02       0.02        0
+
+Rows       Row Source Operation
+---------- ---------------------------------------------------
+      8884 TABLE ACCESS BY INDEX ROWID TBJFC02 
+     10716  INDEX RANGE SCAN       

@@ -1,0 +1,60 @@
+▣ 예제33. 뷰와 조인을 할 때 조인 순서를 조정할 수 있어요 !
+
+@demo
+
+create  or  replace  view   emp_dept
+as 
+ select  e.ename, e.sal, d.loc, e.deptno
+  from   emp  e,  dept   d
+  where  e.deptno = d.deptno ;
+
+■ 실습예제1.  emp_dept 뷰와 salgrade 테이블과 조인을 해서 이름, 월급, 부서위치와
+                   급여등급(grade) 를 출력하시오 !
+
+ select  v.ename, v.sal, v.loc, s.grade
+   from    emp_dept  v,  salgrade   s 
+   where  v.sal  between   s.losal  and  s.hisal;
+
+■ 실습예제2. 위의 실행계획을 확인해서 혹시 view 를 해체했는지 확인하고
+                  view 를 해체했다면 해체하지 못하도록 힌트를 주시오 !
+
+ select  /*+ no_merge(v) */  v.ename, v.sal, v.loc, s.grade
+   from    emp_dept  v,  salgrade   s 
+   where  v.sal  between   s.losal  and  s.hisal;
+
+■ 실습예제3. (삼성 디스플레이 과장님 질문1)  아래의 조인순서를 아래와 같이
+                   되게 하시오 !
+ 
+ 조인순서 : 인라인뷰 v -------------> salgrade  
+                                    ↑
+ 조인방법 :              nested  loop 조인
+
+
+ select  /*+ no_merge(v) leading(v,s) use_nl(s) */  v.ename, v.sal, v.loc, s.grade
+   from    emp_dept  v,  salgrade   s 
+   where  v.sal  between   s.losal  and  s.hisal;
+
+설명: 위의 실행계획이 나오려면 인라인뷰를 해체하지 않게 no_merge 힌트를
+       먼저 사용해줘야합니다. 
+
+■ 실습예제3. (삼성 디스플레이 과장님 질문2) 위의 SQL의 조인순서를 변경하는데
+                 emp_dept  뷰안의 조인순서가 emp ---> dept 순이 되게하고
+                 조인 방법은 nested  loop 조인이 되게하시오 !
+
+ select  /*+ no_merge(v) leading(v,s) use_nl(s) */  v.ename, v.sal, v.loc, s.grade
+   from    emp_dept  v,  salgrade   s 
+   where  v.sal  between   s.losal  and  s.hisal;
+
+답: 
+ select  /*+ no_merge(v) leading(v,s)  use_nl(s)
+              leading(v.e v.d)  use_nl(v.d) */  v.ename, v.sal, v.loc, s.grade
+   from    emp_dept  v,  salgrade   s 
+   where  v.sal  between   s.losal  and  s.hisal;
+
+create  or  replace  view   emp_dept
+as 
+ select  e.ename, e.sal, d.loc, e.deptno
+  from   emp  e,  dept   d
+  where  e.deptno = d.deptno ;
+
+

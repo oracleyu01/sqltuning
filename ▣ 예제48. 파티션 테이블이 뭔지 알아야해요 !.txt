@@ -1,0 +1,62 @@
+▣ 예제48. 파티션 테이블이 뭔지 알아야해요 !
+
+ 회사에 가면 접속하는 서버가 크게 2가지 ?
+
+   OLTP 서버(online trasaction processing)               DW 서버( DATA WAREHOUSE)
+
+       쿠팡:  실시간 주문 데이터 
+
+관련 그림 설명 :  https://cafe.daum.net/oracleoracle/SoqJ/278
+
+■ 실습예제1. emp 테이블을  부서번호를 기준으로 파티션 테이블로 생성하시오 !
+
+create  table  emp_partition
+partition  by  range(deptno)
+(
+   partition   p1   values  less  than  (20),
+   partition   p2   values  less  than  (30),
+   partition   p3   values  less  than  (40)
+)
+   as
+        select  *  from  emp; 
+
+문제92.  emp 테이블과 emp_partition 테이블의 검색 성능을 비교하시오 !
+            (버퍼의 갯수)
+
+튜닝전:   select  *
+             from  emp
+             where  deptno = 10;
+
+버퍼의 갯수 7개
+
+튜닝후:   select  *
+              from emp_partition
+              where deptno = 10; 
+
+버퍼의 갯수 3개 
+
+문제93.  우리반 테이블의 나이 컬럼을 파티션 키로 해서 파티션 테이블을 생성하시오
+            (20대, 30대, 40대) 
+
+답:
+
+create  table  emp19_partition
+partition  by  range(age)
+(
+   partition   p1   values  less  than  (30),
+   partition   p2   values  less  than  (40),
+   partition   p3   values  less  than  (50)
+)
+   as
+        select  *  from  emp19; 
+
+select * from emp19_partition;
+
+20대가 위쪽에 있고 30대가 아래쪽에 저장되어 있습니다. 
+
+※ 파티션 테이블의 종류 3가지 ?
+
+  1.  range  파티션 테이블 :  숫자나 날짜 컬럼을 기준으로 파티션을 분할
+  2.  hash   파티션 테이블 :   해쉬 함수를 이용해서 오라클이 알아서 데이터 분할
+  3.  list     파티션 테이블 :   문자 컬럼을 기준으로 파티션을 분할
+                                     (예: 우리반 테이블의 통신사 컬럼)

@@ -1,0 +1,114 @@
+▣ 튜닝예제14. 테이블 랜덤 엑세스를 줄이기 위해 결합 컬럼 인덱스를 사용하세요
+
+ 단일 컬럼 인덱스 보다 결합 컬럼 인덱스를 사용하는것이 인덱스를 통한
+ 테이블 랜덤 엑세스를 줄일 수 있습니다.
+
+관련 그림: https://cafe.daum.net/oracleoracle/SoqJ/70
+
+■ 실습예제1.  emp 테이블에  deptno 와 job 에 결합 컬럼 인덱스를 거시오!
+
+@demo
+create   index  emp_deptno_job
+  on   emp(deptno, job) ;
+
+■ 실습예제2.  emp_deptno_job 인덱스가 어떻게 생겼는지 구조를 확인하시오 !
+
+  인덱스는 컬럼값 + rowid 구성되어있습니다. 책의 목차를 연상하면 됩니다. 
+
+   select  deptno, job, rowid
+     from  emp
+    where   deptno >= 0;
+
+  부서번호를 먼저 정렬해놓은 것을 기준으로 직업을 abcd 순으로 정렬하고 있습니다.
+
+■ 실습예제3.  아래의 SQL이 단일 컬럼 인덱스를 사용할때와 결합 컬럼 인덱스를
+                   사용할 때의 차이가 무엇이겠는가 ? 
+
+   select   *
+     from  tab1
+     where  col1='ABC'   and  col2='123';  
+
+설명:  col 단일 컬럼 인덱스만 사용했다면  6번을 테이블 엑세스를
+        하러가서 그중에 col2 가 123인것을 찾아야 내야합니다. 
+        그런데 col1+col2 결합 컬럼인덱스를 이용한다면 테이블 엑세스를
+        2번만 하면 됩니다. 
+    
+■ 실습예제4.  아래의 실습 환경을 만들고 다음의 SQL이 아래의 3개의 인덱스중에
+                    어느 인덱스를 옵티마이져가 선택할지 확인하시오 !
+
+@demo
+create  index  emp_deptno  on  emp(deptno);
+create  index  emp_job  on  emp(job);
+create  index  emp_deptno_job  on emp(deptno,job);
+
+select  ename, sal, job, deptno
+  from  emp
+  where  deptno= 20  and job='ANALYST';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+당연히 결합 컬럼 인덱스를 선택하면서 버퍼의 갯수를 2개를 읽어들이고 있습니다.
+
+문제30. 아래의 SQL이 emp_deptno 인덱스를 선택하게 힌트를 주고 실행하고
+            버퍼의 갯수를 몇개를 읽어들이는지 확인하시오 !
+
+select  ename, sal, job, deptno
+  from  emp
+  where  deptno= 20  and job='ANALYST';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+테이블이 작아서 어떤 인덱스를 선택하던 차이가 없습니다. 
+그래서 현업과 같이 대용량 테이블을 생성해서 튜닝 해보겠습니다.
+
+■ 실습예제5. 아래의 환경을 만드시오 !
+
+drop  table  mcustsum purge;
+
+create table mcustsum
+as
+select rownum custno
+     , '2008' || lpad(ceil(rownum/100000), 2, '0') salemm
+     , decode(mod(rownum, 12), 1, 'A', 'B') salegb
+     , round(dbms_random.value(1000,100000), -2) saleamt
+from   dual
+connect by level <= 1200000 ;
+
+create  index  m_salegb  on  mcustsum(salegb);
+create  index  m_salemm  on  mcustsum(salemm);
+create  index  m_salegb_salemm  on  mcustsum(salegb,salemm);
+
+문제31.  아래의 SQL이 m_salegb 인덱스를 선택할 수 있도록 힌트를 주고 실행하시오!
+          그리고 실행계획도 확인하시오 !
+
+ select  count(*)
+   from  mcustsum  t
+   where  salegb ='A'
+     and   salemm  between  '200801'   and  '200812';
+
+답: 
+ select  /*+ index( t  m_salegb ) */  count(*)
+   from  mcustsum  t
+   where  salegb ='A'
+     and   salemm  between  '200801'   and  '200812';
+
+ 단일 컬럼 인덱스를 사용했을때는 4000 개의 버퍼가 넘어가게 사용하고 있습니다.
+
+문제32. 결합 컬럼 인덱스를 사용하겠금 힌트를 주고 실행하고 버퍼의 갯수를
+          확인하세요 !
+
+ select  count(*)
+   from  mcustsum  t
+   where  salegb ='A'
+     and   salemm  between  '200801'   and  '200812';
+
+답:  
+
+ select  /*+  index(t m_salegb_salemm) */   count(*)
+   from  mcustsum  t
+   where  salegb ='A'
+     and   salemm  between  '200801'   and  '200812';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+ 282개의 버퍼만 읽어들이고 있습니다. 

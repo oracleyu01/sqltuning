@@ -1,0 +1,115 @@
+▣ 예제35. 서브쿼리문에서 서브쿼리의 데이터가 작으면 서브쿼리부터 수행되게 해야해요 !
+
+■ 실습예제1.  JONES 보다 더 많은 월급을 받은 사원들의 이름과 월급을 출력하시오
+
+ select  ename, sal
+   from  emp 
+   where  sal >  (  select  sal
+                          from  emp
+                          where  ename='JONES' );
+
+위의 SQL의 경우는 서브쿼리부터 수행되는게 성능에 더 좋습니다.
+왜냐하면 서브쿼리의 데이터 1건을 빨리 검색하고  메인쿼리를 실행하면 되기 
+때문입니다. 
+
+■ 실습예제2.  위의 SQL의 실행계획을 확인해서 서브쿼리부터 수행했는지
+                    확인하시오 !
+
+ select  /*+ gather_plan_statistics */ ename, sal
+   from  emp 
+   where  sal >  (  select  sal
+                          from  emp
+                          where  ename='JONES' );
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+실행계획을 보면 서브쿼리를 먼저 수행하고 나서 메인쿼리를 수행햇습니다.
+
+■ 실습예제3. 똑같은 결과가 나오는거면 조인이 더 속도가 빠른가요?
+                   아니면 서브쿼리가 더 빠른가요 ? 를 증명하는 실습
+
+ 두개중에 어떤게 빠르다고 딱 애기 할 수 없습니다. 왜냐하면 나는 서브쿼리 
+ 수행했지만 오라클이 조인으로 변경해서 수행할 수 있기 때문입니다. 
+
+아래의 SQL 의 결과를 조인으로 수행하세요 !
+
+select   ename, sal
+   from  emp 
+   where   deptno   =  ( select   deptno  
+                                   from  dept
+                                   where   loc='DALLAS' ); 
+답:  
+ select   e.ename, e.sal
+   from  emp  e,  dept  d
+   where  e.deptno = d.deptno   and  d.loc='DALLAS';
+
+위의 2개의 sql 중에 뭐가 빠르다고 애기 할 수 없습니다. 
+왜냐하면 오라클이 서브쿼리문을 조인으로 변경해서 수행할 수도 있기 때문입니다.
+
+■ 실습 예제4.  아래의 SQL의 실행계획을 확인해서 서브쿼리를 먼저 수행했는지
+                     메인 쿼리를 먼저 수행했는지 확인하시오 !
+
+명령 프롬프트창 열고 sys 유져로 접속해서
+alter   system   set  statistics_level =all;
+shutdown  immediate
+startup
+
+select  /*+ gather_plan_statistics */  ename, sal
+   from  emp 
+   where   deptno   =  ( select   deptno  
+                                   from  dept
+                                   where   loc='DALLAS' ); 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+서브쿼리부터 수행되었습니다. 
+
+■ 실습 예제5. 아래의 SQL의 실행계획을 확인하시오 ! 
+
+
+select  /*+ gather_plan_statistics */  ename, sal
+   from  emp 
+   where   deptno   in  ( select   deptno  
+                                   from  dept
+                                   where   loc='DALLAS' ); 
+
+설명: = 을 in 으로 변경했더니 조인으로 수행했습니다. 
+       서브쿼리로 수행을 하려면 in 이 아니라 = 로 작성해야합니다. 
+
+■ 실습 예제6.  아래의 SQL이 메인 쿼리부터 수행되게하시오 
+
+select  /*+ gather_plan_statistics */  ename, sal
+   from  emp 
+   where   deptno   =  ( select   deptno  
+                                   from  dept
+                                   where   loc='DALLAS' ); 
+
+답:  
+select  /*+ gather_plan_statistics */  ename, sal
+   from  emp 
+   where   deptno   =  ( select  /*+ no_push_subq */   deptno  
+                                   from  dept
+                                   where   loc='DALLAS' ); 
+
+※  1. push_subq : 서브쿼리부터 수행해라 ~
+    2. no_push_subq :  메인 쿼리부터 수행해라 ~
+
+ 버퍼를 14개를 읽어들였습니다. 
+
+문제76. 아래의 SQL을 튜닝하시오 !   서브쿼리부터 수행되게 하시오 !
+
+튜닝전:  
+select  /*+ gather_plan_statistics */  ename, sal
+   from  emp 
+   where   deptno   =  ( select  /*+ no_push_subq */   deptno  
+                                   from  dept
+                                   where   loc='DALLAS' ); 
+
+튜닝후: 
+select  /*+ gather_plan_statistics */  ename, sal
+   from  emp 
+   where   deptno   =  ( select  /*+ push_subq */   deptno  
+                                   from  dept
+                                   where   loc='DALLAS' ); 
+
+버퍼의 갯수는 14개지만 서브쿼리부터 수행했습니다.

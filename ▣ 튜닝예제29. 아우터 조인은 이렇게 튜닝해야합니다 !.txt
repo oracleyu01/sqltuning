@@ -1,0 +1,115 @@
+▣ 튜닝예제29. 아우터 조인은 이렇게 튜닝해야합니다 !
+
+ 조인문법과 조인방법은 서로 다른겁니다.
+ 조인문법은 다음과 같습니다. 
+
+  1. 오라클 조인문법 :   1. equi  join
+                               2. non equi join
+                               3. outer  join
+                               4. self  join 
+
+  2. 1999 ANSI 조인문법 :  1.  on 절을 사용한 조인문법
+                                   2.  using 절을 사용한 조인문법
+                                   3.  natural  조인
+                                   4.  left/right/full  아우터 조인
+                                   5.  cross 조인 
+ 
+ 조인 방법은 3가지가 있습니다.   1.  nested  loop  조인
+                                            2.  hash  조인
+                                            3.  sort  merge  조인
+
+■ 실습예제1.   이름과 부서위치를 조인을 하는데 BOSTON 도 출력되게 작성하시오
+
+  select  e.ename, d.loc
+   from   emp   e,   dept   d
+   where  e.deptno (+) =  d.deptno ;
+
+ 아우터 조인 사인(+) 은 데이터가 모자라게 나오는쪽에 붙여주면 됩니다. 
+
+■ 실습예제2.  아래의 데이터를 입력하고 아우터 조인을 써서 출력하시오 !
+
+  insert  into   emp(empno, ename, sal, deptno )
+    values( 1123, 'JONES', 3000, 70 );
+
+  commit;
+
+  select  e.ename, d.loc
+   from  emp   e,  dept   d
+   where  e.deptno = d.deptno  (+) ;
+
+■ 실습예제3.  아래의 SQL의 조인 순서가   dept ---> emp 순이 되게하고
+                    조인 방법은 해쉬조인이 되게하시오 !
+
+  select  e.ename, d.loc
+   from  emp   e,  dept   d
+   where  e.deptno = d.deptno  (+) ;
+
+답: 
+  select /*+ leading(d  e)  use_hash(e)  */   e.ename, d.loc
+   from  emp   e,  dept   d
+   where  e.deptno = d.deptno  (+) ;
+
+ 실행계획을 보면  emp ---> dept  순으로 조인하고 있습니다.
+ leading 힌트를 썼는데도 불구하고 그렇게 실행이 안되었습니다.
+ 아우터 조인 사인(+) 이 있으면 아우터 조인 사인이 없는쪽에서 있는쪽으로
+ 조인을 합니다.
+
+ dept 테이블이 emp 테이블 보다 작은 테이블이므로 dept 테이블을 먼저 driving 
+ 하는게 맞습니다. 그런데 아우터 조인 사인때문에 조인 순서가 고정이 되어버렸습니다. 그래서 이럴때 튜닝하는 힌트가 바로 알려줬던 힌트 입니다.
+
+select /*+ leading(d  e)  use_hash(e) 
+              swap_join_inputs(d)  */   e.ename, d.loc
+   from  emp   e,  dept   d
+   where  e.deptno = d.deptno  (+) ;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+  swap_join_inputs 을 사용해서 해쉬 테이블을 dept 로 정하면 됩니다. 
+  
+문제67.  아래의 SQL을 해쉬 조인으로 수행하는데  해쉬 조인 순서를 
+            올바르게 정해서 해쉬 조인하시오 !
+
+튜닝전 :
+       select  t.calendar_year,  sum(s.amount_sold)
+        from  sales200   s, times200  t
+        where  s.time_id = t.time_id (+)
+          and  t.week_ending_day_id (+) = 1581
+          group  by t.calendar_year;
+
+답: 
+ select  /*+ leading(t,s)  use_hash(s)
+               swap_join_inputs(t)  */ calendar_year,  sum(s.amount_sold)
+        from  sales200   s, times200  t
+        where  s.time_id = t.time_id (+)
+          and  t.week_ending_day_id (+) = 1581
+          group  by t.calendar_year;
+
+문제68. (오늘의 마지막 문제)  아래의 조인 문장을 튜닝하시오 !
+           반드시 전부 nested loop 조인으로 수행하면서 조인관련된 힌트를 쓰시오
+           버퍼의 갯수가 가장 작은 조인순서로 결과를 올리시오 !
+
+ @demo
+
+ select  e.ename, d.loc, s.grade
+   from  emp  e,  dept   d,  salgrade   s
+   where  e.deptno = d.deptno  and  e.sal  betweeen  s.losal   and  s.hisal
+   and  s.grade  in  ( 3, 4 )  and  d.loc='DALLAS';
+
+답:
+   나머지 시간은 자유롭게 내일 포트폴리오 발표 준비하시면 됩니다. 
+   질문할거 있으면 언제든 물어보세요 ~~
+
+drop  table  salgrade;
+ 
+create table salgrade
+( grade   number(10),
+  losal   number(10),
+  hisal   number(10) );
+ 
+insert into salgrade  values(1,700,1200);
+insert into salgrade  values(2,1201,1400);
+insert into salgrade  values(3,1401,2000);
+insert into salgrade  values(4,2001,3000);
+insert into salgrade  values(5,3001,9999);
+ 
+commit;

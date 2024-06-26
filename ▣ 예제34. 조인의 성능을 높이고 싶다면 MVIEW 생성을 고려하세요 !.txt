@@ -1,0 +1,145 @@
+▣ 예제34. 조인의 성능을 높이고 싶다면 MVIEW 생성을 고려하세요 !
+
+  일반 view 는 데이터를 저장하고 있지 않는데  materialize view 는 데이터를 
+  저장하는 view 입니다.
+
+■ 실습예제1.   아래와 같이 view 를 생성하시오 !
+
+ create  view   emp_dept2
+  as
+        select   d.loc, sum(e.sal)  as  sumsal
+          from  emp  e,  dept   d
+          where   e.deptno = d.deptno 
+          group  by  d.loc;
+
+select  * from  emp_dept2;
+
+설명: emp_dept2  뷰는 데이터를 저장하고 있지 않습니다. 그냥 바라보는것입니다.
+
+■ 실습예제2.  emp_dept3 로 위의 결과를 담아내는 MVIEW 를 생성하시오 !
+
+ create  materialized  view   emp_dept3
+  as
+        select   d.loc, sum(e.sal)  as  sumsal
+          from  emp  e,  dept   d
+          where   e.deptno = d.deptno 
+          group  by  d.loc;
+
+select  * from  emp_dept3;
+
+설명: emp_dept3  MVIEW 를 생성하기 위해서 20분이 걸렸다고 가정해봅니다.
+       그러면 앞으로 emp_dept3 를 조회할 때는 20분이 걸리지 않고 3건 밖에 
+       안되기 때문에 금방 조회됩니다.  왜냐면 3건의 데이터를 저장하고 있기 
+       때문입니다. 그러나 emp_dept2 같은 경우는 매번 select * from emp_dept2;
+       를 할때마다 20분이 걸릴겁니다.  왜냐하면 결과 데이터가 저장되지 않기
+       때문입니다. 그래서 매번 조인을 해야합니다. 
+
+  여러분들이 회사에 가서 조인 문장을 작성하고 튜닝을 했을때 아무리 튜닝을 해도
+  더 이상 튜닝 할께 없고 20분이상 걸릴수 밖에 없는 SQL이라고 한다면
+  이제 MVIEW  생성을 고려해야합니다. 
+
+문제74.  emp 와 dept 와 salgrade 를 조인해서 DALLAS 에서 근무하는 사원들의
+          이름과 월급과 부서위치와 급여등급(GRADE) 을 출력하는 쿼리문이
+          20분이상 돈다고 가정하고 앞으로 이 결과를 빠르게 보기 위해서 MVEIW 
+          생성하시오 !  MVEIW 이름은 emp_dept_salgrade 로 하세요 !
+   
+ create  materialized  view   emp_dept_salgrade
+as
+  select  e.ename, e.sal, d.loc, s.grade
+  from  emp  e,  dept  d, salgrade   s
+  where  e.deptno = d.deptno   and  e.sal  between  s.losal  and  s.hisal
+   and  d.loc='DALLAS';
+
+ select  * from  emp_dept_salgrade;
+
+버퍼의 갯수 3개 입니다. 
+그런데 다음과 같이 mview 가 아니라 일반 view 로 생성하면 ?
+
+ create    view   emp_dept_salgrade2
+as
+  select  e.ename, e.sal, d.loc, s.grade
+  from  emp  e,  dept  d, salgrade   s
+  where  e.deptno = d.deptno   and  e.sal  between  s.losal  and  s.hisal
+   and  d.loc='DALLAS';
+
+ select  * from  emp_dept_salgrade2;
+
+ 일반 뷰는 데이터를 저장하고 있지 않으므로 다시 조인합니다. 그래서 21개의
+ 버퍼를 읽어들이고 있습니다. 
+
+■ 실습예제3.  이 아래의 SQL의 실행계획을 보세요 ~
+
+ select   e.ename, e.sal, d.loc, s.grade
+  from  emp  e,  dept  d, salgrade   s
+  where  e.deptno = d.deptno   and  e.sal  between  s.losal  and  s.hisal
+   and  d.loc='DALLAS';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+그냥 20개 읽고 있습니다. 
+
+■ 실습예제4. 다음과 같이 일반 뷰인  emp_dept_salgrade2를 drop 하고
+    다음과 같이 rewrite 힌트를 써서 아래의 조인문의 실행계획을 확인하시오
+
+ drop   view   emp_dept_salgrade2; 
+
+  select /*+ rewrite */ e.ename, e.sal, d.loc, s.grade
+  from  emp  e,  dept  d, salgrade   s
+  where  e.deptno = d.deptno   and  e.sal  between  s.losal  and  s.hisal
+   and  d.loc='DALLAS';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+설명: 위와 같이 하면 조인을 하지 않고 mview 의 데이터를 읽습니다. 
+
+■ 실습예제4. 다음과 같이 mveiw 를 생성하시오 !
+
+ create  materialized   view    dept_sal
+  build  immediate   ---  mview 생성과 동시에 결과 데이터로 생성되는 옵션
+  refresh
+  complete
+  on  demand         ---  mview 와 테이블간의 데이터 동기화를 요구할때만 동기화
+  enable  query  rewrite  --  아래의 쿼리문만 수행해도 mview 의 데이터를 가져오게
+  as
+  select   d.dname,  sum(e.sal)  as sumsal
+   from  emp  e, dept   d
+   where  e.deptno = d.deptno
+   group  by  d.dname;
+
+select * from dept_sal;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+ select  /*+ rewrite */  d.dname,  sum(e.sal)  as sumsal
+   from  emp  e, dept   d
+   where  e.deptno = d.deptno
+   group  by  d.dname;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+※  1.  rewrite 힌트 :  mview 에서 데이터를 가져와라 !
+    2.  no_rewrite 힌트:  테이블에서 데이터를 가져와라 !
+
+ select  /*+ no_rewrite */  d.dname,  sum(e.sal)  as sumsal
+   from  emp  e, dept   d
+   where  e.deptno = d.deptno
+   group  by  d.dname;
+
+문제75.  다음의 SQL의 결과를 MVIEW 로 만들고 query rewrite 가 될 수 
+           있도록 하시오!  ( mview 이름은 emp_mview75 로 하세요)
+
+ select    e.ename,  d.loc,  e.sal
+      from  emp  e,  dept   d
+      where  e.deptno = d.deptno ;  
+
+답:  create  materialized  view   emp_mview75
+      enable  query  rewrite
+     as 
+    select    e.ename,  d.loc,  e.sal
+      from  emp  e,  dept   d
+      where  e.deptno = d.deptno ;  
+
+   select   /*+ rewrite */ e.ename,  d.loc,  e.sal
+      from  emp  e,  dept   d
+      where  e.deptno = d.deptno ;  
+

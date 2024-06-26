@@ -1,0 +1,83 @@
+
+▣▣ 튜닝예제12. 인덱스를 탈 수 있도록 힌트를 사용하세요.
+
+  index 라는 힌트가 있는데 이 힌트를 이용하면 인덱스를 엑세스 할 수 있도록
+  실행계획을 생성할 수 있습니다.
+ 
+ @demo
+  create  index emp_sal on  emp(sal);
+
+  select  /*+  index(emp  emp_sal) */ ename, sal
+  from emp
+  where sal = 3000;
+
+ ※  index 힌트를 사용해야하는 경우 
+
+ 1.  인덱스가 있음에도 불구하고 full table scan 을 하는 경우
+ 2.  where 절에 검색조건이 여러개가 and 로 연결되어 있을때 그중 하나의
+     컬럼의 인덱스를 선택하게 하고 싶을때 
+
+■ 실습예제1.  다음과 같이 2개의 인덱스를 생성하고 아래의 SQL의 실행계획을 
+                    확인하시오 !
+
+@demo
+ create  index  emp_deptno  on  emp(deptno);
+ create  index  emp_job  on  emp(job);
+
+ select  ename, sal, deptno, job
+  from  emp
+  where  deptno = 20  and  job ='ANALYST';
+
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+
+ select count(*)
+  from emp
+ where deptno = 20;   -- 5건
+
+ select count(*)
+  from  emp
+  where job='ANALYST';  -- 2건
+
+설명: 똑똑한 옵티마이져 (스스로 학습하는 옵티마이져) 이면 emp_job 인덱스를
+        선택했을겁니다.  왜냐하면 emp_job 인덱스를 통해서는 2개의 행만 엑세스
+       하면 되지만 emp_deptno 인덱스를 통해서 엑세스하면 5개를 찾은 다음
+       그다음에 직업이 ANALYST 인 2건을 걸러냅니다. 
+       그래서 옵티마이져는 비용이 적게 드는 인덱스를 선택합니다.
+ 
+     그런데 만약에 옵티마이져가 emp_deptno 인덱스를 선택했다면
+     사람이 힌트를 줘서 emp_job 인덱스를 선택하게 해야합니다. 
+
+예: select  /*+  index( emp  emp_job)  */ ename, sal, job, deptno
+       from  emp
+       where   job='ANALYST'  and  deptno = 20;
+
+문제27.  아래의 SQL의 인덱스를 emp_deptno 를 선택하게 힌트를 주고 실행하시오
+
+  select   ename, sal, job, deptno
+     from  emp
+     where  job='ANALYST'  and  deptno= 20;
+
+답:   select  /*+ index(emp  emp_deptno) */  ename, sal, job, deptno
+        from  emp
+        where  job='ANALYST'  and  deptno= 20;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제28.  우리반 테이블에  다음과 같이 인덱스를 생성하고  아래의 SQL이
+            여러개의 인덱스중 가장 좋은 인덱스를 선택할 수 있도록 힌트를
+            주고 실행하시오 !
+
+ create   index  emp19_age   on   emp19(age);
+ create   index  emp19_gender  on  emp19(gender);
+
+ select  /*+ index(emp19 emp19_age) */ ename, age, gender
+  from  emp19
+  where   gender='여'  and  age = 26;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+설명: 위와 같이 index 라는 힌트를 사용해서 실행계획을 고정시키는 경우는
+       앞으로 age 가 gender 의 데이터 변화가 생기지 않는다는 가정하에
+       고정시킵니다.  

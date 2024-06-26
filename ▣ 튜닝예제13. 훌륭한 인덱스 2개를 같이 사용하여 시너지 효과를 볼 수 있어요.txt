@@ -1,0 +1,47 @@
+
+▣▣ 튜닝예제13. 훌륭한 인덱스 2개를 같이 사용하여 시너지 효과를 볼 수 있어요
+
+ 위에서 본 튜닝예제12번은 2개의 인덱스중에 하나의 인덱스를 선택하는거
+ 였는데 만약 2개의 인덱스 둘다 너무나도 훌륭한 인덱스(선택도가 높은 인덱스)
+ 이면 두개를 동시에 사용해서  index merge scan으로 스캔하면 더 좋은 성능을
+ 보입니다. 
+
+ 관련 그림 : https://cafe.daum.net/oracleoracle/SoqJ/69
+ 
+ 두개의 인덱스를 같이 스캔해서 "테이블 랜덤 엑세스"를 줄인 스캔 방법입니다.
+ 만약에 col1 인덱스만 스캔했다면 총 6번의 인덱스를 통한 테이블 랜덤엑세스를
+ 해야하고 col2 인덱스만 스캔했다면 총12번의 인덱스를 통한 테이블 랜덤 엑세스를
+ 해야합니다. 그리고 나서 테이블에 가서 두개의 컬럼 조건에 다 만족하는 2개의 
+ 데이터를 찾아냅니다.  그런데 이렇게 하지 말고 그냥 col1 의 인덱스와 col2 의
+ 인덱스를 두개를 동시에 같이 스캔해서 테이블 랜덤 엑세스를 2번으로 줄이는 
+ 스캔 방법이 index  merge  scan 입니다. 
+
+ @demo
+ create  index  emp_deptno  on  emp(deptno);
+ create  index  emp_job on  emp(job);
+
+ select  /*+  and_equal(emp emp_deptno emp_job)  */  ename, job, deptno
+   from  emp
+   where  deptno = 30  and  job='SALESMAN'; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+ 하나의 인덱스를 사용했을때 보다 두개를 같이 사용하는것이 더 성능이 좋을때
+  사용합니다. 
+
+문제29.  아래의 인덱스를 걸고  아래의 SQL이 2개의 인덱스를 같이 사용하는
+            index  merge scan 이 되게 하시오 !
+
+    create   index  emp19_gender  on emp19(gender);
+    create   index  emp19_telecom  on  emp19(telecom);
+
+   select  ename, age, gender, telecom
+   from  emp19
+   where  gender='남'  and  telecom='sk';
+
+답:  
+   select /*+ and_equal(emp19 emp19_gender emp19_telecom) */ 
+           ename, age, gender, telecom
+   from  emp19
+   where  gender='남'  and  telecom='sk';
+

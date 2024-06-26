@@ -1,0 +1,64 @@
+
+▣ 튜닝예제11. full table scan 을 할 수 밖에 없다면 full table scan 이 빠르게 되도록 튜닝하세요
+
+※ full table scan을 할 수 밖에 없는 경우 
+
+ 1.  where 절이 아예 없거나 인덱스가 없는 컬럼의 데이터를 검색할 때 
+ 2.  인덱스를 생성할 때 
+ 3.  검색조건이 !=, ^=, <> 로 검색했을 때 
+ 4.  테이블의 통계정보를 수집할 때 
+
+ full  table scan을 할 수 밖에 없다면 full table scan을 빠르게 수행하면 됩니다.
+ 대표적인 방법이 병렬 쿼리를 이용하는 방법입니다. 
+
+실습예제1. 아래의 SQL이 병렬쿼리가 되도록 힌트를 주시오 !
+
+튜닝전:  select  ename, sal, job
+              from  emp
+              where  job != 'SALESMAN';
+
+튜닝후:  select  /*+  full(emp)  parallel(emp, 4) */  ename, sal, job
+               from  emp
+               where job !='SALESMAN';
+
+설명:  full 이라는 힌트를 full table scan 을 하라는 힌트 입니다. 
+        parallel(테이블명, 병렬도) 를 써서 병렬도의 갯수만큼 프로세서를 띄워서
+        full scan 을 합니다.
+
+실습예제2.  병렬도를 몇개 까지 줄 수 있는지 확인하시오 ! 
+
+ show parameter cpu_count
+
+cpu_count   integer   20     
+
+ 20 x 2 = 40 까지 줄 수 있습니다. 
+
+ 병렬도를 40까지 쓰면 속도가 40배 빨라집니다. 
+
+문제25. 아래의 SQL을 병렬로 FULL TABLE SCAN 하는데 병렬도를 12로 하고 
+          수행하시오 ! 
+
+튜닝전:  select  ename, sal, job, deptno
+             from  emp
+             where  deptno != 10; 
+
+답: 
+튜닝후 :  select  /*+ full(emp) parallel(emp, 12) */  ename,sal, job, deptno
+               from  emp
+               where  deptno != 10;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+병렬 쿼리는 오라클 xe 버젼에서는 실행안됩니다.  xe 가 무료여서 기능이 없습니다.
+다른 enterprise  edition 에서는 실행됩니다. 
+
+문제26.  아래의 SQL을 튜닝하시오 ! 병렬로 수행되게 하시오 !
+            병렬도는 12로 주세요 
+ 
+튜닝전 :  select  job, count(*)
+               from   emp
+               group  by  job;
+
+튜닝후 :  select  /*+ full(emp) parallel(emp, 12) */  job, count(*)
+               from   emp
+               group  by  job;

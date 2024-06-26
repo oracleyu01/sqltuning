@@ -1,0 +1,52 @@
+▣ 튜닝예제50번. 해쉬 파티션이 뭔지 알아야해요 !
+
+ 파티션 테이블의 데이터 검색 성능을 높이려면 파티션 마다 골고루 데이터가 분배가
+ 되어야합니다.  range 로  하기에도 애매하고 list 하기에도 애매한 데이터가 있습니다.
+ 이럴때는 해쉬 파티션으로 하면 됩니다. 대신 어떤 데이터가 어느 파티션에 들어있는지는
+ 알수는 없습니다. 
+
+■ 실습예제1.  직업을 파티션키로 해서 해쉬 파티션 테이블을 생성하시오 !
+
+ create  table  emp_partition3
+  partition  by   hash(job)  partitions  4
+as
+  select * from emp;
+
+ 서랍장의 갯수만 정해주면 됩니다.  위에서는 4개로 정해줬습니다.
+
+ select * from  emp_partition3;
+
+문제96. emp_partition3 의 해쉬 파티션의 파티션 이름을 오라클이 어떻게 
+           주었는지 확인하시오 ! 
+
+1. emp_partition3 를 테이블의 통계정보를 수집해라 !
+
+ exec dbms_stats.gather_table_stats('c##scott', 'emp_partition3');
+
+2. emp_partition3 테이블의 파티션 이름과 파티션내의 데이터 건수를 확인
+
+  select   table_name, partition_name, num_rows
+     from  user_tab_partitions
+    where  lower(table_name)='emp_partition3';
+
+문제97.  emp 테이블을 hiredate 를 기준으로 년도별로 range 파티션을 생성하시오
+
+ p1 <--- 1980년도 데이터
+ p2 <--- 1981년도 데이터
+ p3 <--- 1982년도 데이터
+ p4 <--- 1983년도 데이터
+ p5 <--- 1984년도 포함 그 이후 데이터
+
+create  table   emp_partition4
+      partition by  range(hiredate)
+   (   partition   p1   values   less  than( to_date('19810101','YYYYMMDD') ),
+       partition   p2   values   less  than( to_date('19820101','YYYYMMDD') ),
+       partition   p3   values   less  than( to_date('19830101','YYYYMMDD') ),
+       partition   p4   values   less  than( to_date('19840101','YYYYMMDD')),
+       partition   p5   values   less  than( maxvalue ) 
+    )
+ as   select * from emp;
+
+문제98.  (오늘의 마지막 문제)   81년 11월 17일에 입사한 사원의 모든 컬럼의 데이터를
+           출력하는데  emp 테이블에서 검색했을때와 emp_partition4 에서 검색했을때의
+           버퍼의 갯수의 차이를 비교하시오 !

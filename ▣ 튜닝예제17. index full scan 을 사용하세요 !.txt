@@ -1,0 +1,83 @@
+▣ 튜닝예제17. index full scan 을 사용하세요 !
+
+  인덱스 full scan 은 인덱스의 구조에 따라 전체를 스캔하는 스캔 방법입니다.
+  대용량 테이블의 데이터를 빠르게 count 하고 싶을 때 주로 사용합니다. 
+
+■ 실습예제1. 직업, 직업별 인원수를 출력하시오 !
+                   실행계획을 확인하세요 !
+
+@demo
+create   index  emp_job   on  emp(job);
+
+select  job, count(*)
+  from  emp
+  group   by  job; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+full table scan을 하면서 buffer 의 갯수가 7개를 읽어들였습니다. 
+
+■ 실습예제2.  위의 실행계획을 index  full scan으로 유도하시오 !
+
+ job 에 not null 제약을 걸면 됩니다. 
+
+ alter   table   emp
+   modify   job   constraint   emp_job_nn   not  null;
+
+ select  table_name, constraint_name
+   from  user_constraints
+   where   table_name='EMP';
+
+select  job, count(*)
+  from  emp
+  group   by  job; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+버퍼의 갯수가 7개에서 1개로 줄어들었습니다. 
+
+문제38. 아래의 SQL을 검색 속도를 높이시오 !
+
+@demo
+create  index  emp_deptno  on  emp(deptno);
+
+튜닝전:  select  deptno , count(*)
+             from  emp
+             group  by deptno ;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+not null 제약을 걸 수 없는 상황이라면 아래와 같이 SQL을 튜닝하면 됩니다. 
+
+alter   table   emp
+  drop  constraint  emp_deptno_nn; 
+
+튜닝후:  select  deptno, count(*)
+             from  emp
+             where  deptno  is  not  null
+             group  by  deptno;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제39.  직업, 직업별 토탈월급을 출력하는데 table full scan 이 아닌 
+            index full scan 이 될 수 있도록 인덱스도 걸고 SQL도 작성하시오 !
+
+답:   
+      @demo
+      create   index  emp_job_sal
+        on  emp( job, sal );
+
+      select  job, sum(sal)
+       from  emp
+       where  job  is  not  null
+       group   by  job; 
+
+ANALYST	6000
+CLERK	4150
+MANAGER	8275
+PRESIDENT	5000
+SALESMAN	5600
+
+★ 설명:  order by 절을 따로 쓰지 않았는데 ABCD  순으로 출력되는 이유는
+             index  를 full scan 했기 때문입니다. 
+             table full scan 하지 않고 index full scan 하면서 성능이 좋아졌습니다.

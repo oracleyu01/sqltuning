@@ -1,0 +1,28 @@
+▣ 예제42. 데이터 분석함수를 이용해서 SQL을 재작성할 줄 알아야해요1 !
+
+ 서울 대학교 DB 시스템의 SQL 튜닝 사례 (2기 임길현 )
+
+튜닝전:  select  decode( no, 1, deptno, 2, null) as deptno, sum(sal)
+              from   emp   e,  ( select  rownum  no
+                                        from   dual
+                                        connect  by  level <= 2 )  d
+              group  by  decode( no, 1, deptno, 2, null )
+              order  by deptno;
+
+튜닝후:    select deptno, sum(sal)
+                 from  emp
+                 group by rollup(deptno);
+
+문제86.  아래의 튜닝후 SQL을 튜닝전 SQL로 변경하시오 !
+
+튜닝후:  select  job, sum(sal)
+             from  emp
+             group  by  rollup(job)
+             order  by  job  asc;
+
+튜닝전: select  decode( no, 1, job, 2, null) as job, sum(sal)
+              from   emp   e,  ( select  rownum  no
+                                        from   dual
+                                        connect  by  level <= 2 )  d
+              group  by  decode( no, 1, job, 2, null )
+              order  by  job;

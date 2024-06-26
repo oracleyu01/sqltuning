@@ -1,0 +1,39 @@
+▣ 예제43.데이터 분석함수를 이용해서 SQL을 재작성할 줄 알아야해요. 두번째 !
+	
+■ (서울 대학교 튜닝 사례2)  아래의 SQL을 튜닝하시오 !
+
+튜닝전: 
+ select   job, deptno, null  as mgr, sum(sal)
+   from  emp
+   group  by  job, deptno
+ union  all
+ select  null as  job, deptno,  mgr, sum(sal)
+   from  emp
+   group  by  deptno, mgr; 
+
+설명:  위쪽 결과는 직업별 부서번호별 토탈월급이 출력되고 있고 아래쪽은
+         부서번호별 mgr 별 토탈월급이 출력되고 있습니다.
+         이 SQL의 문제점은 emp 테이블을 2번이나 select 하고 있다는것입니다. 
+
+튜닝후:   select  job,  deptno, mgr, sum(sal)
+               from  emp
+               group  by  grouping  sets(  ( job, deptno), (deptno,mgr) );
+
+문제87. 아래의  SQL 튜닝하시오 !
+
+튜닝전:  
+ select   job, deptno, null  as mgr, sum(sal)
+   from  emp
+   group  by  job, deptno
+ union  all
+ select  null as  job, deptno,  mgr, sum(sal)
+   from  emp
+   group  by  deptno, mgr
+ union  all
+ select  to_char(null)  as  job, to_number(null) as deptno, to_number(null) as mgr, sum(sal)
+  from emp;
+
+튜닝후: select  job,  deptno, mgr, sum(sal)
+               from  emp
+               group  by  grouping  sets(  ( job, deptno), (deptno,mgr), () );
+

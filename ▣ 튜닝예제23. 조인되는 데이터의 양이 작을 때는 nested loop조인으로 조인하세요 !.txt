@@ -1,0 +1,63 @@
+▣ 튜닝예제23. 조인되는 데이터의 양이 작을 때는 nested loop조인으로 조인하세요 !
+
+  메모리에서 조인하는 해쉬조인을 쓰면 빠르게 조인할 수 있지만
+  회사의 database 는 나혼자 사용하는것이 아니라 여러 사람들이 같이 사용하므로
+  너도 나도 해쉬조인을 사용하겠다고 하면 다같이 느려집니다 
+  조인되는 데이터의 양이 작으면 nested loop 조인으로 유도하고
+  조인되는 데이터의 양이 클때만 hash 조인을 사용하세요 !
+
+※  조인 방법  3가지 ?
+
+  1. nested  loop  join  :  use_nl 힌트
+  2. hash  join            :  use_hash  힌트
+  3. sort  merge  join  :   use_merge 힌트 
+
+ 이중에서 nested loop 조인으로 조인할 때 가장 중요한 점은 조인의 연결고리 컬럼에
+ 인덱스의 유무에 따라 성능이 크게 차이가 납니다. 그래서 nested loop 조인을 할때는
+ 조인 연결고리 컬럼에 인덱스가 있는지 확인을 꼭 해야합니다. 없으면 걸어줘야합니다.
+
+  select  e.ename, d.loc
+     from  emp  e,  dept   d
+     where   e.deptno  = d.deptno
+
+■ 실습예제1.   연결고리 컬럼에 인덱스가 없었을때의 버퍼의 갯수 확인 하기 
+
+  @demo 
+
+  select  /*+ leading(d e) use_nl(e) */  e.ename, d.loc
+     from  emp  e,  dept   d
+     where   e.deptno  = d.deptno;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+ 35개의 버퍼를 읽어들이고 있습니다. 
+
+■ 실습예제2.  연결고리가 되는 컬럼에 인덱스를 걸고 버퍼의 갯수를 확인하시오 !
+
+ create  index  emp_deptno  on  emp(deptno);
+ create  index  dept_deptno  on  dept(deptno);
+
+  select  /*+ leading(d e) use_nl(e) index(e  emp_deptno) */  e.ename, d.loc
+     from  emp  e,  dept   d
+     where   e.deptno  = d.deptno;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+버퍼의 갯수가 35개에서 10개로 줄어들었습니다. 
+
+문제51. (오늘의 마지막 문제)  아래의 SQL의 조인 순서는 무조건 nested loop 조인이 
+         되게하는데 조인 연결고리가 되는 컬럼에 인덱스를 걸어서 버퍼의 갯수를
+         더 줄이시오 !
+
+튜닝전:   인덱스 생성전 버퍼의 갯수
+
+  select  /*+ leading(t s)  use_nl(s)  */  t.calendar_year, sum(amount_sold)
+             from  sales200  s , times200   t
+             where  s.time_id = t.time_id
+             and  t.week_ending_day_id = 1582
+             group  by  t.calendar_year;
+
+튜닝후 :  인덱스 생성후 버퍼의 갯수
+
+마지막 문제 올리시고 쉬셨다가 나머지 시간은 자유롭게 SQL포트폴리오 또는 스터디하세요
+

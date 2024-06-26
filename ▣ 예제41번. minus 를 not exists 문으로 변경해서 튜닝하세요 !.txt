@@ -1,0 +1,43 @@
+▣ 예제41번. minus 를 not exists 문으로 변경해서 튜닝하세요 !
+
+ 집합 연산자 4가지 ?
+
+  1.  union  all
+  2.  union
+  3.  intersect
+  4.  minus
+
+ minus 집합 연산자는 정렬 작업을 일으킵니다. 대용량 테이블을 사용하게 되면
+ 성능이 느려집니다.  이럴 때 not exists 문을 사용하면 정렬없이 바로 결과를 볼 수
+  있습니다. 
+
+■ 실습예제1.  아래의 SQL을 not exists 문으로 변경하세요 !
+
+      dept 테이블에는 존재하는 부서번호인데 emp 테이블에는 존재하지 않는 
+      부서번호를 출력해라 ~
+
+튜닝전:   select  deptno
+               from  dept
+             minus
+            select  deptno
+              from  emp;
+
+튜닝후:    select  deptno
+                from  dept    d
+                where  not  exists  ( select  deptno
+                                              from  emp   e
+                                              where  e.deptno = d.deptno );
+
+문제85.  아래의 SQL을 튜닝하시오 !   
+
+튜닝전 :  select  telecom
+              from  telecom_table
+            minus
+            select  telecom
+             from  emp19;
+
+튜닝후:   select  telecom
+                from  telecom_table   t
+                where   not   exists  ( select  telecom
+                                              from  emp19   e
+                                              where  e.telecom = t.telecom );

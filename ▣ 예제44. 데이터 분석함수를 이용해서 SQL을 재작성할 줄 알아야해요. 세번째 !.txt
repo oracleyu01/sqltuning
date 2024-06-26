@@ -1,0 +1,35 @@
+▣ 예제44. 데이터 분석함수를 이용해서 SQL을 재작성할 줄 알아야해요. 세번째 !
+
+■ 실습예제1.  사원번호, 이름, 월급, 월급의 누적치를 출력하시오 !
+
+튜닝전:  select  empno, ename, sal, ( select  sum(sal)  
+                                                  from  emp  e
+                                                  where e.empno <= b.empno )  sumsal
+               from   emp   b
+               order  by  empno;
+
+설명:  ppt 그림으로 설명,  스칼라 서브쿼리가  emp 테이블의 건수만큼 반복해서
+        14번이 수행이 되었습니다. 그래서 악성 SQL입니다. 
+
+버퍼의 갯수는 105 개입니다. 
+
+튜닝후:   select  empno, ename, sal,  sum(sal)  over  (  order  by  empno  asc )  sumsal
+              from  emp;
+
+
+버퍼의 갯수가 7개로 확 줄었습니다.   위와 같이 데이터 분석함수를 이용해서 SQL을
+재작성해서 튜닝할 수 있어야합니다.
+
+문제88. 아래의 SQL을 튜닝하시오 ! ( 카페에 답을 올려주세요 )
+
+튜닝전:  select  deptno, empno, ename, sal,   ( select  sum(sal)
+                                                               from  emp   e
+                                                               where  e.empno <= b.empno 
+                                                                  and  e.deptno = b.deptno )  sumsal
+           from  emp   b
+           order  by  deptno,  empno;
+
+튜닝후:  select deptno, empno, ename, sal,  sum(sal) over  ( partition by deptno
+                                                                              order by sal ) sumsal
+                  from emp;
+

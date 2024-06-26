@@ -1,0 +1,44 @@
+▣ 예제37. 서브쿼리를 세미조인으로 변경해서 수행되게 하세요 !
+
+  서브쿼리 문장을 튜닝할 때  push_subq 와 no_push_subq 힌트로는 튜닝이 
+  안될때 세미조인을 사용해야합니다.  
+  세미는 영어로 semi 입니다.  한국어로는 절반이라는 뜻입니다.
+  절반의 조인이라는겁니다. 완전한 조인이 아니라 절반의 조인입니다.
+  왜 절반의 조인이냐면 세미조인은 기본적으로 메인쿼리의 테이블부터 먼저
+  드라이빙이 됩니다. 그렇지만 조인이기 때문에 조인 방법중 아주 강력한
+  해쉬조인을 사용할 수 있게 됩니다. 
+ 
+■ 실습예제1.  다음의 SQL을 해쉬 세미조인으로 수행하시오 !
+
+튜닝전:  select  count(*)
+             from  sales200
+             where  cust_id  in  ( select  /*+ no_unnest  push_subq */ cust_id
+                                            from  customers200
+                                            where  cust_first_name='Abel' ); 
+
+튜닝후:  select  count(*)
+             from  sales200
+             where  cust_id  in  ( select  /*+ unnest  hash_sj */ cust_id
+                                            from  customers200
+                                            where  cust_first_name='Abel' ); 
+
+※ unnest  힌트는  서브쿼리를 조인으로 수행해라 ! 라는 힌트이고
+   세미조인의 종류가 3가지 인데 다음과 같습니다.
+
+  1. nl_sj :  nested  loop  semi 조인
+  2. hash_sj :  hash semi 조인 (★ 가장 많이 사용)
+  3. merge_sj :  sort  merge  semi  조인 
+
+문제79. 아래의 SQL의 실행계획이 HASH SEMI 조인이 되게하시오 !
+
+튜닝전:  select   ename, sal
+               from  emp
+               where   deptno  in ( select   /*+ no_unnest  no_push_subq */ deptno
+                                             from  dept
+                                             where   loc='DALLAS' );
+
+튜닝후: select   ename, sal
+               from  emp
+               where   deptno  in ( select   /*+ unnest  hash_sj */ deptno
+                                             from  dept
+                                             where   loc='DALLAS' );

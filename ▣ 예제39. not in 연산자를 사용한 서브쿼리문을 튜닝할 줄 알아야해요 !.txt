@@ -1,0 +1,115 @@
+
+▣ 예제39. not in 연산자를 사용한 서브쿼리문을 튜닝할 줄 알아야해요 !
+
+■ (복습문제1)   DALLAS 에서 근무하는 사원들의 이름과 월급을 출력하는데
+                    서브쿼리문으로 수행하시오 !
+ 
+ select  ename, sal
+     from  emp
+     where   deptno    in   (  select  deptno
+                                       from   dept
+                                       where   loc='DALLAS' );
+
+■ (복습문제2) 위의 실행계획이  해쉬 세미조인(semi join) 이 되게하시오 !
+
+※ 조인문장 튜닝은 조인 순서와 조인방법만 잘 결정하면 됩니다. 
+
+※ 세미조인(semi join)  힌트 3가지 ?  
+
+ 세미조인은 완전한 조인이 아니라 절반의 조인인데 SQL문장이 조인문이 아니라
+ 서브쿼리문의 실행에 조인방법을 사용하려고 만든 오라클 기법입니다. 
+
+ 1.  nested  loop semi  join :    nl_sj
+ 2.  hash  semi  join          :    hash_sj
+ 3.  sort  merge  semi   join :   merge_sj
+
+답: 
+ select  ename, sal
+     from  emp
+     where   deptno    in   (  select /*+ hash_sj */  deptno
+                                       from   dept
+                                       where   loc='DALLAS' );
+
+■ (복습문제3) 위의 해쉬 세미 조인에서 해쉬 테이블이 dept 가 되게 하시오!
+
+select  ename, sal
+     from  emp
+     where   deptno    in   (  select /*+ hash_sj */  deptno
+                                       from   dept
+                                       where   loc='DALLAS' );
+
+답: 
+select  ename, sal
+     from  emp
+     where   deptno    in   (  select /*+ hash_sj  swap_join_inputs(dept) */  deptno
+                                       from   dept
+                                       where   loc='DALLAS' );
+
+설명: dept 테이블이 emp 테이블보다 크기가 더 작으니까 dept 테이블이 
+       해쉬 테이블이 되어줘야 합니다. 
+
+문제82. 위의 sql을 수정해서 dallas 에서 근무하지 않는 사원들의 이름과 월급을
+          출력하시오 !
+
+답:
+select  ename, sal
+     from  emp
+     where   deptno  not  in   (  select  deptno
+                                       from   dept
+                                       where   loc='DALLAS' );
+
+설명:  실행계획을 보게 되면 해쉬 안티 조인을 하고 있습니다. 
+        안티(ANTI) 조인은 세미 조인과 같은 건데 not 이 붙어서 안티 조인인겁니다.
+        메인쿼리의 데이터중에 서브쿼리에 없는 데이터를 찾는 실행계획인데
+        해쉬조인의 장점을 살려서 찾는 실행계획입니다. 
+           ↓ 
+       메모리에서 조인하는 조인방법
+
+SQLD 객관식 문제:  메모리에서 조인하는 조인방법을 골라라 ~  답: 해쉬조인
+
+※ 안티 조인(anti join) 힌트 3가지 ?
+
+  1.  nested  loop  anti  join   :      nl_aj
+  2.  hash  anti  join             :     hash_aj
+  3.  sort  merge  anti  join    :     merge_aj
+
+select  ename, sal
+     from  emp
+     where   deptno  not  in   (  select /*+ hash_aj */  deptno
+                                           from   dept
+                                           where   loc='DALLAS' );
+
+
+※ 핵심 정리 ! 서브쿼리 튜닝은 이것만 알고 있으면 됩니다.
+
+   in 연산자를 서브쿼리에 썼으면 hash_sj 힌트를 써서 해쉬 세미조인하게 하고
+  not  in 연산자를 서브쿼리에 썼으면 hash_aj 힌트를 써서 해쉬 안티 조인이 되게합니다.
+
+문제83.  아래의 서브쿼리 문장을 튜닝하는데 해쉬 안티 조인을 할때 작은 테이블인
+            dept 테이블이 해쉬테이블로 구성되게하시오 !
+
+select  ename, sal
+     from  emp
+     where   deptno  not  in   (  select /*+ hash_aj */  deptno
+                                           from   dept
+                                           where   loc='DALLAS' );
+
+답: 
+select  ename, sal
+     from  emp
+     where   deptno  not  in   (  select /*+ hash_aj  swap_join_inputs(dept) */  deptno
+                                           from   dept
+                                           where   loc='DALLAS' );
+
+중요(★) :  dept 테이블이 해쉬테이블이 안되고 있습니다.  되게하려면 다음과 같이
+              sql을 작성해줘야합니다. (SQL 전문가 시험 주관식 문제)
+
+select  ename, sal
+     from  emp
+     where   deptno  not  in   (  select /*+ hash_aj  swap_join_inputs(dept) */  deptno
+                                           from   dept
+                                           where   loc='DALLAS' 
+                                           and  deptno  is  not  null  )
+    and   deptno  is  not  null ;
+
+지금부터는 단순하게 힌트로 튜닝하는게 아니라 SQL 재작성으로 튜닝하는걸 배웁니다.

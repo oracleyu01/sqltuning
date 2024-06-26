@@ -1,0 +1,81 @@
+
+▣ 튜닝예제22. 검색조건에 따라 조인 순서를 잘 정해줘야합니다. 
+
+■ 실습1.  이름이 SCOTT 인 사원의 이름과 부서위치를 출력하시오 !
+
+  select  e.ename, d.loc
+     from  emp  e,  dept   d
+     where   e.deptno  = d.deptno    and    e.ename ='SCOTT'; 
+
+■ 실습2.  위의 SQL의 조인순서는 아래의 2가지 중에 어떤게 좋을까요 ?
+
+  1. dept --->  emp
+  2. emp ---> dept 
+
+답:  2번입니다.  만약 dept 를 먼저 읽고 emp 랑 조인해야한다면 조인시도를 4번을 
+     해야하지만  emp 를 먼저 읽고 dept 랑 조인한다면 1번만 조인시도 하면 됩니다. 
+     이름 scott  인 사원의 부서위치만 알면 되기 때문입니다. 
+
+관련그림 :  튜닝수업 pdf 자료 102 페이지 
+
+문제47.  아래의 SQL의 조인방법은 무조건 NESTED LOOP 조인으로 하되 
+            조인 순서를 emp  ----> dept 순이 되게 하시오 !
+
+  select  e.ename, d.loc
+     from  emp  e,  dept   d
+     where   e.deptno  = d.deptno    and    e.ename ='SCOTT'; 
+
+답:   select  /*+ leading(e  d)  use_nl(d) */  e.ename, d.loc
+         from  emp  e,  dept   d
+         where   e.deptno  = d.deptno    and    e.ename ='SCOTT'; 
+
+문제48. 아래의 SQL의 가장 좋은 조인순서를 힌트로 정하시오 !
+          조인 방법은 무조건 nested  loop 조인이 되게 하세요 !
+
+ select  e.ename, d.loc
+   from  emp  e,  dept    d
+   where  e.deptno = d.deptno 
+    and  e.job ='SALESMAN'  -- 4건
+    and  d.loc ='CHICAGO';   -- 1건 
+ 
+ select count(*) from  emp where  job='SALESMAN';
+ select count(*) from  dept  where  loc='CHICAGO';
+
+
+답:  
+ select  /*+ leading(d  e)  use_nl(e) */  e.ename, d.loc
+   from  emp  e,  dept    d
+   where  e.deptno = d.deptno 
+    and  e.job ='SALESMAN'
+    and  d.loc ='CHICAGO';
+
+문제49.  현장과 같은 대용량 테이블을 생성하는 환경을 구성을 하시오
+
+  select count(*) from  sh.sales;
+  select  count(*) from  sh.times;
+
+ create  table  sales200
+  as
+   select  *
+     from  sh.sales;
+
+ create  table  times200
+  as
+   select  *
+    from  sh.times;
+
+문제50.  아래의 SQL을 튜닝하시오 !  조인 방법은 그대로 두고 적절한 조인순서를
+            힌트로 줘서 튜닝하시오 !
+
+튜닝전 :  select  /*+ leading(s t)  use_nl(t)  */  t.calendar_year, sum(amount_sold)
+             from  sales200  s , times200   t
+             where  s.time_id = t.time_id
+             and  t.week_ending_day_id = 1582
+             group  by  t.calendar_year;
+
+답:
+튜닝후 :  select  /*+ leading(t s)  use_nl(s)  */  t.calendar_year, sum(amount_sold)
+             from  sales200  s , times200   t
+             where  s.time_id = t.time_id
+             and  t.week_ending_day_id = 1582
+             group  by  t.calendar_year;

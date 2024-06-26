@@ -1,0 +1,51 @@
+▣ 예제47. update 문의 튜닝방법을 잘알아야해요 !
+
+-- 환경구성
+
+@demo
+
+alter  table  emp
+  add  loc   varchar2(20) ;
+
+select  ename, loc   from  emp;
+
+■ 실습예제1.  아래의 SQL을 튜닝하시오 !
+
+사원 테이블에 LOC 컬럼을 DEPT 테이블을 이용해서 근무하는 부서위치로 값을 갱신하시오 ! 
+ 
+튜닝전:   update   emp   e
+                 set   loc = ( select  loc
+                                   from  dept   d
+                                   where  d.deptno = e.deptno );
+
+select  ename, loc  from  emp;
+rollback;
+
+SQL 진단:   UPDATE 문장이 emp 테이블의 건수만큼 수행이 되어서 14번 수행되었습니다.
+
+21c 버젼의 튜닝후 :  update ( select  e.loc  as  emp_loc,  d.loc  as  dept_loc
+                                         from   emp   e,  dept   d
+                                         where  e.deptno = d.deptno )
+                            set  emp_loc = dept_loc;
+
+설명: 21c  바로 수행됩니다. 21c 이전 버젼에서는 dept 테이블에 deptno 에  primary key
+       제약을 걸어줘야 가능합니다. 
+
+21c 이전 버젼의 튜닝후 :   merge  into  emp  e
+                                   using   dept   d
+                                   on   ( e.deptno = d.deptno )
+                                   when  matched  then
+                                    update  set  e.loc = d.loc; 
+
+문제91.  emp 테이블에  dname 컬럼을 추가하고  해당 사원의 부서명으로 값을 갱신하시오
+
+  alter   table   emp
+   add  dname  varchar2(20);
+
+답 :   21c 버젼의 튜닝방법으로 수행하세요 ~
+
+21c 버젼의 튜닝후 :  update ( select  e.dname  as  emp_dname,  d.dname  as  dept_dname
+                                         from   emp   e,  dept   d
+                                         where  e.deptno = d.deptno )
+                            set  emp_dname = dept_dname;
+

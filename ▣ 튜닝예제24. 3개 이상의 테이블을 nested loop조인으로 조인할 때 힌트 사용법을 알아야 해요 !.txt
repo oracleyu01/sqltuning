@@ -1,0 +1,105 @@
+▣ 튜닝예제24. 3개 이상의 테이블을 nested loop조인으로 조인할 때 힌트 사용법을 알아야 해요 !
+
+※  조인 방법  3가지 ?
+
+  1. nested  loop  join  :  use_nl 힌트  :  조인되는 데이터의 양이 작고 조인 연결고리 컬럼에
+                                                     인덱스가 있는 경우에 유리한 조인 방법
+
+  2. hash  join            :  use_hash  힌트 : 조인되는 데이터의 양이 많고 조인 연결고리 컬럼에
+                                                      인덱스가 없거나 있어도 인덱스 효과를 보기 어려울때
+                                                      유리한 조인방법 
+
+ ※ 인덱스 효과를 보기 어려운 경우 ?  너무 많은 데이터를 인덱스를 통해서 검색하려 할때
+
+  3. sort  merge  join  :   use_merge 힌트 : 조인되는 데이터의 양이 많고  조인 연결고리 컬럼에
+                                                       인덱스가 없거나 있어도 인덱스 효과를 보기 어려울때
+                                                       유리한 조인방법인데 조인된 결과가 연결고리 컬럼을
+                                                       기준으로 정렬까지 해야할 때 유용합니다.
+
+■ 실습예제1.  emp 와 dept 와 salgrade 를 조인해서  이름과 월급과 부서위치와 
+                    급여등급(grade) 를 출력하시오 !
+
+ @demo
+
+ select   e.ename, e.sal, d.loc, s.grade
+   from   emp   e,  dept   d,  salgrade   s
+   where  e.deptno = d.deptno  and   e.sal  between s.losal  and  s.hisal; 
+
+■ 실습예제2.  위의 SQL의 실행계획을 다음과 같이 수행되게 하시오 !
+
+  조인 순서 :   dept --->  emp ---> salgrade
+                           ↑           ↑
+  조인방법 :            nl조인     nl조인
+
+ select  /*+ leading(d e s)  use_nl(e)  use_nl(s)  */   e.ename, e.sal, d.loc, s.grade
+   from   emp   e,  dept   d,  salgrade   s
+   where  e.deptno = d.deptno  and   e.sal  between s.losal  and  s.hisal; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제52. 위의 SQL의 조인 순서와 조인 방법이 다음과 같이 되도록 하시오 !
+
+  조인 순서:  salgrade ------> emp -------> dept
+                              ↑               ↑
+  조인 방법 :          nl 조인           nl 조인
+
+
+ select  /*+ leading(s e d)  use_nl(e)  use_nl(d)  */   e.ename, e.sal, d.loc, s.grade
+   from   emp   e,  dept   d,  salgrade   s
+   where  e.deptno = d.deptno  and   e.sal  between s.losal  and  s.hisal; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제53. 아래의 조인의 성능을 높이기 위해서 조인 연결고리 컬럼에 인덱스를 생성하시오
+
+ ※ nested loop 조인의 검색성능을 높이려면 연결고리가 되는 컬럼에 인덱스가
+    있어야 합니다. 
+
+ select  /*+ leading(s e d)  use_nl(e)  use_nl(d)  */   e.ename, e.sal, d.loc, s.grade
+   from   emp   e,  dept   d,  salgrade   s
+   where  e.deptno = d.deptno  and   e.sal  between s.losal  and  s.hisal; 
+
+답:   create   index  emp_deptno    on   emp(deptno);
+      create   index  dept_deptno    on   dept(deptno);
+      
+ select  /*+ leading(s e d)  use_nl(e)  use_nl(d)  */   e.ename, e.sal, d.loc, s.grade
+   from   emp   e,  dept   d,  salgrade   s
+   where  e.deptno = d.deptno  and   e.sal  between s.losal  and  s.hisal; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+          salgrade ---> emp  ---->  dept_deptno 인덱스 ---> dept 
+                      nl조인      nl조인                          nl조인
+
+  ※ nested loop 조인이 3번이 나온 이유는 advanced nested loop조인이라고 해서
+     nested  loop 조인을 더 빠르게 수행하게 처리됬다는 뜻입니다.ㅏ 
+
+문제54. emp 테이블을 가지고 bonus 테이블을 생성하시오 !
+
+ drop  table  bonus;
+
+  create  table  bonus
+  as
+   select  empno , sal*1.2  as  comm2
+    from  emp;
+
+문제55.  emp 와 dept 와 bonus 를 조인해서 이름과 부서위치와 comm2 를 출력하시오
+
+  select  e.ename, d.loc, b.comm2
+    from  emp  e, dept  d,  bonus  b
+    where  e.deptno = d.deptno  and  e.empno = b.empno; 
+
+문제56.  위의 결과를 다시 출력하는데 이름이 SCOTT 인 사원의 데이터만 출력하시오!
+
+  select  e.ename, d.loc, b.comm2
+    from  emp  e, dept  d,  bonus  b
+    where  e.deptno = d.deptno  and  e.empno = b.empno 
+      and   e.ename='SCOTT';
+
+문제57.  demo 스크립트를 돌리고 나서 위의 SQL의 조인 순서와 방법을 아래와 같이
+          되도록 힌트를 주시오 !
+
+ @demo
+  조인 순서 :   emp ----> dept  ----->  bonus
+                           ↑             ↑
+  조인 방법 :         nl 조인      nl 조인

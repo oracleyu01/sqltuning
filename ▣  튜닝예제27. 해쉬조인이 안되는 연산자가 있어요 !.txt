@@ -1,0 +1,24 @@
+▣  튜닝예제27. 해쉬조인이 안되는 연산자가 있어요 !
+
+  해쉬 조인이 가능하려면 조인의 연결고리가 반드시 =  조건이어야 합니다.
+
+■ 실습예제1.   emp 와 salgrade 를 조인해서  이름과 월급과 급여등급(grade)을
+                    출력하는데 해쉬조인이 되게하시오 !
+
+ select  /*+ leading(s  e)  use_hash(e)  */  e.ename, e.sal, s.grade
+   from  emp  e,  salgrade   s
+   where  e.sal  between  s.losal   and  s.hisal; 
+
+ 해쉬조인이 되려면 무조건 조인 연결고리가 = 조건이어야합니다.
+ between .. and  조건이면 해쉬조인을 할 수 없습니다. 
+
+ 만약에 emp 와 salgrade 가 모두 대용량 테이블이어서 nested loop 조인을 하면
+ 성능이 느리다면 어떻게 튜닝을 해야하는가 ?
+
+ 답:  sort  merge  join 을 하면 됩니다. 
+
+ select  /*+ leading(s  e)  use_merge(e)  */  e.ename, e.sal, s.grade
+   from  emp  e,  salgrade   s
+   where  e.sal  between  s.losal   and  s.hisal; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));

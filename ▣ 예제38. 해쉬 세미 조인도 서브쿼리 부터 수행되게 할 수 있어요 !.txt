@@ -1,0 +1,52 @@
+▣ 예제38. 해쉬 세미 조인도 서브쿼리 부터 수행되게 할 수 있어요 !
+
+ 해쉬 세미조인은 원래 메인쿼리의 테이블을 해쉬 테이블로 구성할 수 밖에
+ 없는거였는데 swap_join_inputs 힌트가 나오면서 서브쿼리의 테이블도
+ 해쉬 테이블로 구성할 수 있게 되었습니다. 
+
+■ 실습예제1.  아래의 SQL을 해쉬 세미조인이 되게 하는데 서브쿼리의 테이블이
+                   해쉬 테이블이 되게 하시오 !
+
+튜닝전:  select  ename, sal
+              from  emp
+              where  deptno   in (  select  deptno
+                                                from  dept
+                                                where  loc='DALLAS') ;
+
+튜닝후:  select  ename, sal
+              from  emp
+              where  deptno   in (  select  /*+  unnest  hash_sj  
+                                                          swap_join_inputs(dept) */  deptno
+                                                from  dept
+                                                where  loc='DALLAS') ;
+
+문제80.  아래의 SQL을 튜닝하시오 !
+            해쉬 세미조인이 되게하고 customers200 이 해쉬테이블로 구성되게하시오
+
+튜닝전: 
+select  count(*)
+             from  sales200
+             where  cust_id  in  ( select  /*+ unnest  hash_sj 
+                                              no_swap_join_inputs(customers200)   */ cust_id
+                                            from  customers200
+                                            where  cust_first_name='Abel' ); 
+튜닝후:  
+select  count(*)
+             from  sales200
+             where  cust_id  in  ( select  /*+ unnest  hash_sj
+                                                       swap_join_inputs(customers200) */ cust_id
+                                            from  customers200
+                                            where  cust_first_name='Abel' ); 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제81. (오늘의 마지막 문제)  아래의 SQL을 해쉬 세미 조인이 되게 튜닝하시오
+           작은 테이블이 해쉬 테이블이 되게하시오 !
+
+튜닝전:  select count(*)
+             from  customers200
+             where  cust_id   in  ( select  /*+ no_unnest  push_subq */ cust_id
+                                              from  sales200
+                                             where  amount_sold  between  1  and 10000);
+튜닝후:
+

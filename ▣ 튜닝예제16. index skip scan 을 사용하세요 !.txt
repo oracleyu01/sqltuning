@@ -1,0 +1,133 @@
+
+▣ 튜닝예제16. index skip scan 을 사용하세요 !
+
+  index  skip scan 을 이해하려면 결합 컬럼 인덱스가 어떤 SQL에서 사용될 수 있는지를
+  먼저 이해해야 합니다. 
+
+  결합 컬럼 인덱스는 결합 컬럼 인덱스의 첫번째 컬럼이 WHERE 절에 있어야지만
+  그 SQL이 결합 컬럼 인덱스를 사용할 수 있습니다. 
+
+관련 그림 :  https://cafe.daum.net/oracleoracle/SoqJ/2  여기에 첨부된  PDF 파일 47번
+
+방법7. index skip scan 으로 유도하자 !
+
+※ 인덱스 엑세스 방법 7가지 ! 
+
+
+▣ 실습1. 결합 컬럼 인덱스의 첫번째 컬럼이 WHERE 절에 없으면 full table scan 을 
+             하는지 확인하기 !
+
+@demo
+create   index  emp_deptno_job
+ on  emp(deptno, job) ; 
+
+select ename, job, deptno
+  from  emp
+  where  job='MANAGER';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+설명:  결합 컬럼 인덱스는 deptno+job 으로 되어 있는데  select 문의 where 절에서
+        검색되는 컬럼은 job 만 있으면 인덱스를 사용하지 못하고 full table scan을
+        하게 됩니다.  결합 컬럼 인덱스의 첫번째 컬럼이 반드시 where 절에 있어야
+        결합 컬럼 인덱스를 사용할 수 있게 됩니다.
+
+
+select  /*+ index_ss(emp emp_deptno_job) */ ename,deptno, job
+ from emp
+ where job ='MANAGER'; 
+
+설명:  emp_deptno_job 인덱스에서 부서번호 10번부터 스캔하면서 읽어가는데
+         job 이 manager 를 찾았으면 바로 테이블 엑세스를 하러가고 그 다음이
+        manager 가 아니면 나머지는 스킵합니다. 그리고 20번을 스캔하러 갑니다.
+        20번도 마찬가지로 직업이 MANAGER 를 찾았으면 바로 테이블 엑세스하러가고
+        나머지는 스킵합니다.  스킵을 많이 하면 많이 할 수록 FULL TABLE SCAN 보다
+        성능이 좋습니다. 
+
+▣ 실습2.  아래의 SQL 이 인덱스 스킵 스캔을 하는지 실행계획을 확인하시오 !
+
+select  /*+ index_ss(emp emp_deptno_job) */ ename,deptno, job
+ from emp
+ where job ='MANAGER'; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+튜닝전에 FULL TABLE SCAN 할때는 버퍼가 7개 였는데 
+INDEX SKIP SCAN 으로 유도하니까 버퍼가 2개로 줄었습니다. 
+
+▣ 실습3.  아래의 환경을 만드시오 !
+
+▣ 튜닝 환경 구성
+
+drop  table mcustsum  purge;
+
+create table mcustsum
+as
+select rownum custno
+     , '2008' || lpad(ceil(rownum/100000), 2, '0') salemm
+     , decode(mod(rownum, 12), 1, 'A', 'B') salegb
+     , round(dbms_random.value(1000,100000), -2) saleamt
+from   dual
+connect by level <= 1200000 ;
+
+create  index  m_salemm_salegb  on  mcustsum(salemm,salegb);
+
+▣ 실습3. 아래의 SQL을 튜닝하시오 !
+
+튜닝전:    select  count(*)
+               from  mcustsum   t
+               where  salegb ='A'; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+ index fast full scan 실행계획이 나왔는데 full table scan 보다는 좀 더 빠른 실행계획
+ 입니다. 버퍼의 갯수가 3367개를 읽어들였습니다.
+ salegb 이 결합 컬럼 인덱스의 두번째 컬럼이어서 index range scan 을 하지 못한겁니다.
+ 부분범위 처리를 해야하는데 전체범위처리를 한것입니다. 
+
+튜닝후 :  select  /*+ index_ss(t  m_salemm_salegb) */  count(*)
+               from  mcustsum   t
+               where  salegb ='A'; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+튜닝전이 3367 개 였는데 튜닝후 302개로 버퍼의 갯수가 줄어들었습니다. 
+
+▣ 현업 SQL튜닝 사례:  https://cafe.daum.net/oracleoracle/SoqJ/107
+
+
+문제35.  다시 emp 와 dept 를 초기화 하고 아래의 SQL을 튜닝하시오 !
+
+@demo
+create  index   emp_job_sal   
+ on  emp(job, sal );
+
+튜닝전: 
+select  ename, job, sal
+  from  emp
+  where  sal = 1250;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+튜닝후: 
+select  /*+ index_ss(emp  emp_job_sal) */   ename, job, sal
+  from  emp
+  where  sal = 1250;
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+※  (SQL 전문가 시험) index skip scan 의 효과를 보려면 결합 컬럼 인덱스의
+     첫번째 컬럼의 종류가 몇가지 안되어야 효과가 좋습니다.
+
+문제36.  job + sal 으로 만들어진 결합 컬럼인덱스의 효과를 보기 위해서 
+           직업의 종류가 몇개인지 조회해봅니다. 
+
+ select  count( distinct  job )
+   from  emp;
+
+문제37.  deptno + sal 로 만들어진 결합 컬럼 인덱스의 효과를 보기 위해서
+            deptno 의 종류가 몇개인지 조회해 봅니다. 
+
+ select  count( distinct  deptno )
+    from  emp;
+

@@ -1,0 +1,94 @@
+▣ 예제36. push_subq 와 no_push_subq 와의 짝꿍힌트를 알아야 해요 !
+
+ push_subq 와 no_push_subq 와의 짝꿍힌트는 바로 no_unnest 힌트 입니다.
+
+ 1. no_unnest :  조인으로 풀지 말고 서브쿼리로 수행해라 !
+ 2.  unnest     :  서브쿼리를 조인으로 수행해라 ! 
+
+   nest  :  둥지, 감싸다 
+  unnest :  감싸지 않다. 풀어해쳐라 !  --->  서브쿼리를 풀어해치고 조인으로 해라 !
+  no_unnest :  강하게 감싸라 ! 절대 풀어해치지 말고 서브쿼리로 수행해라 !
+
+ no_unnest 를 써서 서브쿼리로 실행되게 해야 서브쿼리부터 수행되게 하라고 하는
+ push_subq 힌트가 의미가 있고 no_push_subq 를 써서 메인 쿼리부터 수행되게해라
+ 라는 의미가 있는것 입니다. 
+
+■ 실습예제1.  아래의 SQL이 서브쿼리부터 수행되게하시오 !
+
+ select  /*+ gather_plan_statistics */ ename, sal
+   from  emp
+   where  deptno  in   ( select  deptno
+                                  from  dept
+                                  where  loc = 'NEW YORK' );
+
+답:
+
+ select  /*+ gather_plan_statistics */ ename, sal
+   from  emp
+   where  deptno  in   ( select  /*+ no_unnest push_subq */  deptno
+                                  from  dept
+                                  where  loc = 'NEW YORK' );
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제77.  아래의 SQL이 메인쿼리부터 수행되게 하시오 !
+
+ select  /*+ gather_plan_statistics */ ename, sal
+   from  emp
+   where  deptno  in   ( select  /*+ no_unnest push_subq */  deptno
+                                  from  dept
+                                  where  loc = 'NEW YORK' );
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+답:
+
+ select  /*+ gather_plan_statistics */ ename, sal
+   from  emp
+   where  deptno  in   ( select  /*+ no_unnest no_push_subq */  deptno
+                                  from  dept
+                                  where  loc = 'NEW YORK' );
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제78. 아래의 SQL을 튜닝하시오 ! 
+
+select count(*) from sales200;
+select count(*) from customers200;
+
+create table  sales200
+ as
+  select * from sh.sales;
+
+create  table  customers200
+as
+ select  * from  sh.customers;
+
+
+C:\Users\ITWILL>exp c##scott/tiger file=sales200.dmp tables=sales200.dmp
+
+C:\Users\ITWILL>exp c##scott/tiger file=sales200.dmp tables=sales200.dmp
+
+위에 파일을 카페에서 다운 받아서 c 드라이브 밑에 ITWILL 밑에 가져다 두고 
+다음과 같이 import 합니다. 
+
+C:\Users\ITWILL>imp c##scott/tiger file=sales200.dmp  tables=sales200
+C:\Users\ITWILL>imp c##scott/tiger file=cutomers200.dmp  tables=customers200
+
+튜닝전:  select  count(*)
+             from  sales200
+             where  cust_id  in  ( select  /*+ no_unnest  no_push_subq */ cust_id
+                                            from  customers200
+                                            where  cust_first_name='Abel' ); 
+
+튜닝후: select  count(*)
+             from  sales200
+             where  cust_id  in  ( select  /*+ no_unnest  push_subq */ cust_id
+                                            from  customers200
+                                            where  cust_first_name='Abel' ); 
+
+튜닝후도 40초 넘게 걸리지만 main query 부터 수행하는것보다는 빠르게 결과가
+출력이 됩니다.  
+
+위와 같이 튜닝전이나 튜닝후나 결과가 느리게 출력된다면 서브쿼리로 수행하면
+안되고  세미 조인으로 수행되게 해줘야합니다. 

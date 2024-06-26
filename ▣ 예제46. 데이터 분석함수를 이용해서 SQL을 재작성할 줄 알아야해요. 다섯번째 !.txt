@@ -1,0 +1,57 @@
+▣ 예제46. 데이터 분석함수를 이용해서 SQL을 재작성할 줄 알아야해요. 다섯번째 !
+
+■ 아래의 SQL을 튜닝하시오 ! 직업별로 월급이 1등인 사원들을 출력
+
+튜닝전:  select  e.empno, e.ename, e2.job, e2.max_sal
+                from    emp   e,   (  select   job, max(sal)  as  max_sal
+                                             from  emp
+                                             group  by  job )   e2
+                 where  e.job = e2.job 
+                    and  e.sal  = e2.max_sal
+                 order  by  e.empno;
+
+위의 SQL의 문제점은 emp 테이블을 2번 select 한게 문제입니다. 그러면서 조인까지
+ 쓰고 있습니다.  그런데 튜닝후 SQL은 조인문장도 쓰지 않고 EMP 테이블을 1번만 SELECT
+ 해서 결과를 출력합니다. 
+
+튜닝후:   힌트는 rank  함수를 이용하면 됩니다. 
+
+  select  empno, ename, job, sal
+      from   (
+                  select  empno, ename, job, sal, rank()  over ( partition by job
+                                                                            order  by sal desc)  as  rnk
+                        from  emp
+                )
+     where  rnk = 1
+     order  by  empno;
+             
+설명: max 를 rank 로 변환해서 SQL 튜닝을 했습니다. 
+
+문제90. 아래의 SQL 튜닝하시오 !
+
+ 자기의 월급이 자기가 속한 부서번호의 평균월급보다 더 큰 사원들의
+ 부서번호, 이름, 월급, 자기가 속한 부서번호의 평균월급을 출력 !
+
+튜닝전:    
+select  e.deptno, e.ename, e.sal, v.avgsal
+  from   emp   e,  ( select  deptno, avg(sal)   as  avgsal
+                              from   emp  
+                              group  by  deptno  )   v
+  where   e.deptno = v.deptno  and  e.sal >  v.avgsal
+  order  by  1  asc;
+
+SQL 진단:  1.  emp 테이블을 2번 엑세스(access) 했습니다.
+              2.  조인을 해서 결과를 출력했습니다.
+
+버퍼의 14개 읽었습니다.
+
+튜닝후:   
+    select  deptno, ename, sal, avgsal
+     from   ( 
+              select  deptno, ename, sal, avg(sal)  over  ( partition  by  deptno )  as  avgsal
+                    from   emp
+              )
+     where  sal > avgsal ;
+
+  버퍼의 갯수 7개 
+

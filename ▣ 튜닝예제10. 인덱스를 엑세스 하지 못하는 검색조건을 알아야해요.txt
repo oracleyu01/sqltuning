@@ -1,0 +1,107 @@
+▣▣ 튜닝예제10. 인덱스를 엑세스 하지 못하는 검색조건을 알아야해요
+
+ where  절에 다음과 같은 검색조건이 있으면 인덱스를 엑세스 하지 못합니다.
+
+ 1. is  null 이나  in not null
+ 2. like 검색시 와일드 카드(%) 를 앞에 사용한 경우
+ 3. 부정 연산자( !=, <>, ^=) 를 사용한 경우
+ 4. 인덱스 컬럼을 가공했을 때
+
+실습예제1. 커미션이 null 인 사원들의 이름과 커미션을 출력하시오 !
+
+@demo
+create  index  emp_comm  on  emp(comm);
+
+select  ename, comm
+  from  emp
+  where  comm  is  null; 
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제21.  아래의 SQL을 튜닝하시오 !
+           힌트는 함수 기반 인덱스를 생성하고 SQL을 변경해야합니다.
+
+튜닝전: 
+select  ename, comm
+  from  emp
+  where  comm  is  null; 
+
+튜닝후:  
+create  index  emp_comm_func  
+  on  emp( nvl(comm, -1)  );
+
+select  ename, comm
+  from  emp
+  where  nvl(comm, -1) = -1; 
+
+실습예제2. 이름의 끝글자가 T 로 끝나는 사원들의 이름과 월급을 출력하시오 !
+
+@demo
+create  index  emp_ename  on  emp(ename); 
+
+select  ename, sal
+  from  emp
+  where  ename  like  '%T';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+문제22.  이름의 끝글자가 T 로 끝나는 사원들의 이름을 출력하는 SQL을
+            like 가 아니라 substr 로 작성해서 출력하시오 ! 
+
+변경전: 
+select  ename, sal
+  from  emp
+  where  ename  like  '%T';
+
+변경후: 
+select  ename, sal
+  from  emp
+  where  substr(ename, -1, 1 ) = 'T' ;
+
+문제23. 아래의 SQL의 검색속도를 높이기 위한 함수 기반 인덱스를 생성하시오 !
+
+select  ename, sal
+  from  emp
+  where  substr(ename, -1, 1 ) = 'T' ;
+
+답:   create  index  emp_ename_func
+        on  emp(substr(ename, -1, 1 ) ); 
+
+select  ename, sal
+  from  emp
+  where  substr(ename, -1, 1 ) = 'T' ;
+
+문제24. 우리반 테이블에서 주소가 '읍' 으로 끝나는 학생들의 이름과 주소를
+         출력하는 쿼리문을 튜닝후 SQL로 작성하시오 ! 인덱스가 필요하면 인덱스도
+         생성하세요 !
+
+create   index  emp19_address_func
+ on  emp19( substr(address, -1, 1 )  );
+
+select  ename, address
+  from  emp19
+  where  substr(address, -1, 1 ) ='읍';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+실습예제3.   직업에 인덱스를 걸고 직업이 SALESMAN 이 아닌 사원들의
+                 이름과 직업을 출력하는 SQL의 실행계획을 확인하시오 !
+
+create   index  emp_job   on  emp(job);
+
+select  ename, job
+  from  emp
+  where  job  !='SALESMAN';
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+
+이 경우는 full table scan 을 할 수 밖에 없어서 full  table scan을 빠르게 수행하게하는
+튜닝방법을 사용해야합니다. 
+
+* 정리: 인덱스를 사용하지 못하는 검색조건
+
+ 1. is null 과 is not null
+ 2. like 검색시 와일드카드가 뒤에 나오는 경우
+ 3. !=, <>, ^=  같지 않다를 검색하는 경우
+ 4. 인덱스 컬럼을 가공했을때 
+

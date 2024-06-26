@@ -1,0 +1,67 @@
+▣ 튜닝예제49.  리스트 파티션이 뭔지 알아야해요 !
+
+  문자형 컬럼값을 기준으로 파티션을 생성하고자 하면 리스트 파티션을 만들면 됩니다.
+
+■ 실습예제1.  사원 테이블의 직업을 파티션 키로 해서 리스트 파티션을 만드시오
+
+create  table  emp_partition2
+partition  by  list(job)
+ (
+   partition   p1   values  ('ANALYST'),
+   partition   p2   values  ('CLERK'),
+   partition   p3   values  ('MANAGER'),
+   partition   p4   values  ('PRESIDENT'),
+   partition   p5   values  ('SALESMAN')
+)
+   as
+        select  *  from  emp; 
+
+문제94.  우리반 테이블을 통신사를 파티션 키 컬럼으로 해서 파티션 테이블로
+            생성하시오 !   emp19_partition2  로 하세요.
+            sk, lg, kt,  lg알뜰 로 파티션 4개를 만드세요 !
+ 
+delete  from emp19
+ where  telecom  is  null;
+
+commit;
+
+답:
+create  table  emp19_partition2
+partition  by  list(telecom)
+ (
+   partition   p1   values  ('sk'),
+   partition   p2   values  ('kt'),
+   partition   p3   values  ('lg'),
+   partition   p4   values  ('lg알뜰')
+ )
+    as
+        select  *  from  emp; 
+
+문제95.  이름이 이승원 학생의 모든 컬럼의 데이터를 출력하는 SQL의 튜닝전과
+           튜닝후의 차이가 있는지 확인하시오 !
+
+튜닝전:   select  *
+            from  emp19
+            where  ename='이승원';
+
+튜닝후:   select  *
+            from  emp19_partiton2
+            where  ename='이승원';
+
+설명:  위의 SQL은 차이가 없습니다. 왜냐하면 파티션 키컬럼이 WHERE 절에 없기
+        때문에 승원이 데이터를 찾으려면 결국 모든 파티션을 다 뒤져야합니다.
+
+튜닝전:   select  *
+            from  emp19
+            where  ename='이승원' and  telecom='sk';
+
+튜닝후:   select  *
+            from  emp19_partiton2
+            where  ename='이승원' and  telecom='sk';
+
+위와 같이 파티션 키컬럼이 where 절에 검색조건에 있어야 해당 파티션만 
+읽을 수 있습니다.  
+
+위와 같이 파티션을 구성하게 되면 lg알뜰 같은 경우는 1건 밖에 없기 때문에
+큰 서랍장에 1건만 들어가게 됩니다.  그래서 파티션만 잘 나누면 되고
+데이터가 서랍장마다 골고루 들어가게만 하면 된다면 해쉬 파티션을 만들면 됩니다.

@@ -1,0 +1,50 @@
+▣ 예제32. 인라인 뷰와 조인할 때는 인라인 뷰가 해체 되지 않게 하세요
+
+@demo
+
+select   v.ename,  v.loc,  s.grade
+  from   salgrade   s,   ( select  e.ename, e.sal, d.loc
+                                 from  emp   e,  dept   d
+                                  where  e.deptno = d.deptno )  v
+  where   v.sal   between  s.losal   and  s.hisal ;
+
+위의 SQL의 조인순서는 salgrade ---> in line view  순이어야합니다.
+그런데 그렇게 했는지 실행계획을 확인해보세요. 
+실행계획에 view 가 없으면 in line view 를 해체해버려서 다음과 같이 수행을 한겁니다. 
+
+Query transformer  가  아래와 같이 SQL을 변경해서 수행한것 입니다.
+
+select  e.ename, d.loc, s.grade
+  from  emp  e,  dept  d, salgrade  s
+  where  e.deptno = d.deptno  and  e.sal  between  s.losal  and  s.hisal ;
+
+in line view 를 해체하지 못하게 하시오 !  
+
+select  /*+ no_merge(v) */   v.ename,  v.loc,  s.grade
+  from   salgrade   s,   ( select  /*+ no_merge */  e.ename, e.sal, d.loc
+                                 from  emp   e,  dept   d
+                                  where  e.deptno = d.deptno )  v
+  where   v.sal   between  s.losal   and  s.hisal ;
+
+※  1. no_merge 힌트 :  인라인 뷰나 뷰를 해체하지 말아라 ! 
+    2. merge            :  인라인 뷰나 뷰를 해체해라 !
+
+위의 SQL의 실행계획에 VIEW 가 나오는지 봐보세요. VIEW 가 나오면 인라인뷰를
+해체하지 않은것입니다. !
+
+문제73. 아래의 SQL의 인라인 뷰가 해체되지 않도록 힌트를 주시오 !
+
+select    v.ename, v.sal, v.grade, d.loc
+   from     dept   d,  (  select   e.ename, e.sal,  s.grade, e.deptno
+                                 from   emp  e, salgrade   s
+                                where e.sal  between  s.losal   and  s.hisal  )   v
+  where  v.deptno = d.deptno ;
+                                 
+답:
+
+select  /*+ no_merge(v) */  v.ename, v.sal, v.grade, d.loc
+   from     dept   d,  (  select  /*+ no_merge */  e.ename, e.sal,  s.grade, e.deptno
+                                 from   emp  e, salgrade   s
+                                where e.sal  between  s.losal   and  s.hisal  )   v
+  where  v.deptno = d.deptno ;
+

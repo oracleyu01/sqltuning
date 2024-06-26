@@ -1,0 +1,57 @@
+▣ 튜닝예제28. 대량의 테이블을 조인하는데 해쉬조인을 할 수 없다면 sort merge join 을 하세요 !
+
+  select  /*+ leading(d  e)  use_merge(e)  */  e.ename, e.loc, e.deptno
+   from  emp   e,  dept   d
+   where  e.deptno = d.deptno ;
+
+ p144 페이지 그림 
+
+ 그림에 나온것처럼 emp 와 dept 를 조인하기 전에 deptno 를 ascending하게
+ 미리 정렬을 해놨기 때문에 조인이 빨라집니다.  왜냐면 dept 테이블에 10번 
+ 부서번호를 조인하려고 하면 10번을 모아놨기 때문에 빠르게 스캔할 수 가
+ 있는겁니다. 20번도 마찬가지고 30번도 마찬가지입니다. 
+ 대신 정렬 해야된다는 부담감은 존재합니다. 
+ 
+※  sort  merge  join 이 유용한때는?
+
+ 1. 해쉬조인을 해야하는데 해쉬조인을 할 수 없을때
+ 2. 조인된 결과를 정렬해서 봐야할 때
+
+문제66.  아래의 SQL이 sort merge join 이 되게 하시오 !
+
+create  table  customers200
+as
+   select  * from  sh.customers;
+
+튜닝전:
+select  /*+  leading(s c)  use_nl(c) */  count(*)
+             from  sales200   s, customers200  c
+             where  s.cust_id = c.cust_id
+              and  c.country_id = 52790    
+              and  s.time_id between  to_date('1999/01/01','YYYY/MM/DD')
+                        and  to_date('1999/12/31','YYYY/MM/DD');
+
+튜닝후:  sort  merge join 도 조인 순서를 정할 때 테이블 크기가 작거나
+            검색조건에 의해서 엑세스 되는 건수가 작은 테이블부터 선두 테이블로
+            둬야합니다. 
+
+ select  count(*) from sales200 ;  -- 918843
+
+ select  count(*) from customers200;  -- 55500
+
+ select  count(*) from sales200  
+       where time_id between  to_date('1999/01/01','YYYY/MM/DD')
+                        and  to_date('1999/12/31','YYYY/MM/DD'); --  247945
+
+ select  count(*)  from  customers200
+      where country_id = 52790;      -- 18520
+
+select  /*+  leading(c s)  use_merge(s) */  count(*)
+             from  sales200   s, customers200  c
+             where  s.cust_id = c.cust_id
+              and  c.country_id = 52790    
+              and  s.time_id between  to_date('1999/01/01','YYYY/MM/DD')
+                        and  to_date('1999/12/31','YYYY/MM/DD');
+
+select * from  table(dbms_xplan.display_cursor(null, null, 'ALLSTATS LAST'));
+

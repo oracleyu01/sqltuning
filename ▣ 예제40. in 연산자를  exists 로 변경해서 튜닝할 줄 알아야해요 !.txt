@@ -1,0 +1,49 @@
+▣ 예제40. in 연산자를  exists 로 변경해서 튜닝할 줄 알아야해요 !
+
+■ 실습예제1.  in 연산자를 사용한 아래의 서브쿼리문을 분석하시오 !
+
+문제: 부서 테이블에서 부서번호를 출력하는데 사원 테이블에 있는 부서번호에 대한
+       부서번호만 출력하시오 !
+
+select  deptno
+  from  dept
+  where   deptno   in  (  select  deptno 
+                                  from  emp ); 
+
+위의 SQL의 문제점은  DEPT 테이블의  deptno 를 모두 emp 테이블에 가서
+조인을 해서 결과를 출력한다는게 문제점입니다.  만약에 emp 테이블이 엄청 큰
+대용량 테이블이면 위의 SQL은 바람직한 SQL은 아닙니다. 
+dept 와 emp 가 아주 큰 테이블이면 hash_sj 힌트를 줘도 속도가 개선되지 않습니다.
+
+그래서 이럴때는 exists 문으로 SQL을 재작성해서 튜닝하는게 튜닝의 정석입니다.
+
+select   deptno
+ from   dept   d
+ where   exists  (  select   deptno
+                        from   emp   e
+                        where  e.deptno = d.deptno );
+
+관련 그림 : https://cafe.daum.net/oracleoracle/SoqJ/223
+
+ in 은 다 찾아서 해쉬 세미 조인하지만 exists 문은 메인 쿼리의 데이터가
+ 서브쿼리에 존재사면 거기서 찾는것을 멈춥니다.  그래서 in 보다 속도가 훨씬 
+ 빠릅니다.  메인쿼리의 데이터의 양이 얼마 되지 않을때 유리한 SQL 문입니다.
+
+문제84. 아래의 SQL을 튜닝하시오 !
+
+select count(*) from  customers200;
+select count(*) from  sales200;
+
+튜닝전:   select  count(*)
+                 from   customers200
+                 where  cust_first_name = 'Abel'
+                 and  cust_id    in   (  select  cust_id
+                                               from  sales200 );
+
+튜닝후:   select  count(*)
+                 from  customers200   c
+                 where  cust_first_name='Abel'
+                 and  exists  (  select  cust_id
+                                      from  sales200    s
+                                      where  s.cust_id = c.cust_id );
+
