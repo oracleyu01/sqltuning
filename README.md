@@ -16,4 +16,7 @@
   
 - **튜닝예제2.  옵티마이져가 뭔지 알아야해요 !**: 📄 [노트](https://www.notion.so/1-1-d64d7db2641d49f59318f017c2ed4c05)
   
-- **3. RAC 를 운영할 때 필요한 IP 3가지 ?**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+- **튜닝예제3. 실행계획의 종류 2가지를 알아야합니다 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+
+- **튜닝예제3. 실행계획의 종류 2가지를 알아야합니다 !**: 📄[노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC3.%20RAC%20%EB%A5%BC%20%EC%9A%B4%EC%98%81%ED%95%A0%20%EB%95%8C%20%ED%95%84%EC%9A%94%ED%95%9C%20IP%203%EA%B0%80%EC%A7%80.md)
+
