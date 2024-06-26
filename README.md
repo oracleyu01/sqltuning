@@ -11,7 +11,7 @@
 ## 수업 자료( ☀️ 2024년 3월 23일 updated)
 
 
-- **1. RAC 개념**:  📄[노트](https://github.com/oracleyu01/rac_class/blob/main/rac%EA%B0%9C%EB%85%90.md)
+- **튜닝예제1.  select 문의 실행과정 3단계를 먼저 아셔야해요**:  📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C1.%20%20select%20%EB%AC%B8%EC%9D%98%20%EC%8B%A4%ED%96%89%EA%B3%BC%EC%A0%95%203%EB%8B%A8%EA%B3%84%EB%A5%BC%20%EB%A8%BC%EC%A0%80%20%EC%95%84%EC%85%94%EC%95%BC%ED%95%B4%EC%9A%94..txt)
   &nbsp;
   
 - **2. 클러스터(cluster) 가 무엇인가 ?**: 📄 [노트](https://github.com/oracleyu01/rac_class/blob/main/RAC%ED%95%B5%EC%8B%AC2.%20%ED%81%B4%EB%9F%AC%EC%8A%A4%ED%84%B0(Cluster)%EB%9E%80%20%EB%AC%B4%EC%97%87%EC%9D%B8%EA%B0%80.md)
