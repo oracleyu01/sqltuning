@@ -54,7 +54,7 @@
 
 - **튜닝예제21. 조인문장을 튜닝할 때 조인 순서 튜닝이 중요합니다.**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C21.%20%EC%A1%B0%EC%9D%B8%EB%AC%B8%EC%9E%A5%EC%9D%84%20%ED%8A%9C%EB%8B%9D%ED%95%A0%20%EB%95%8C%20%EC%A1%B0%EC%9D%B8%20%EC%88%9C%EC%84%9C%20%ED%8A%9C%EB%8B%9D%EC%9D%B4%20%EC%A4%91%EC%9A%94%ED%95%A9%EB%8B%88%EB%8B%A4..txt)
 
-- **예제22. 검색조건에 따라 조인 순서를 잘 정해줘야합니다.**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C22.%20%EA%B2%80%EC%83%89%EC%A1%B0%EA%B1%B4%EC%97%90%20%EB%94%B0%EB%9D%BC%20%EC%A1%B0%EC%9D%B8%20%EC%88%9C%EC%84%9C%EB%A5%BC%20%EC%9E%98%20%EC%A0%95%ED%95%B4%EC%A4%98%EC%95%BC%ED%95%A9%EB%8B%88%EB%8B%A4..txt)
+- **튜닝예제22. 검색조건에 따라 조인 순서를 잘 정해줘야합니다.**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C22.%20%EA%B2%80%EC%83%89%EC%A1%B0%EA%B1%B4%EC%97%90%20%EB%94%B0%EB%9D%BC%20%EC%A1%B0%EC%9D%B8%20%EC%88%9C%EC%84%9C%EB%A5%BC%20%EC%9E%98%20%EC%A0%95%ED%95%B4%EC%A4%98%EC%95%BC%ED%95%A9%EB%8B%88%EB%8B%A4..txt)
 
 - **튜닝예제23. 조인되는 데이터의 양이 작을 때는 nested loop조인으로 조인하세요 !**: 📄[노트](https://github.com/oracleyu01/test20/blob/main/%E2%96%A3%20%ED%8A%9C%EB%8B%9D%EC%98%88%EC%A0%9C23.%20%EC%A1%B0%EC%9D%B8%EB%90%98%EB%8A%94%20%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%9D%98%20%EC%96%91%EC%9D%B4%20%EC%9E%91%EC%9D%84%20%EB%95%8C%EB%8A%94%20nested%20loop%EC%A1%B0%EC%9D%B8%EC%9C%BC%EB%A1%9C%20%EC%A1%B0%EC%9D%B8%ED%95%98%EC%84%B8%EC%9A%94%20!.txt)
 
