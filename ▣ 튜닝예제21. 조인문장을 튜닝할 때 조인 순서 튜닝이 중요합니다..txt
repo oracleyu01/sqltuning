@@ -1,0 +1,59 @@
+▣ 튜닝예제21. 조인문장을 튜닝할 때 조인 순서 튜닝이 중요합니다.
+
+  ★  조인문장 튜닝할 때 꼭 알아할 2가지 ?
+
+    1. 조인 방법 :     3가지 
+                         
+       1. nested  loop  join :  조인하려는 데이터의 양이 많지 않을 때 유리한 조인방법
+       2. hash  join  : 조인하려는 데이터의 양이 많을 때 유리한 조인 방법
+       3. sort  merge  join :  조인하려는 데이터의 양이 많을 때 유리한 조인방법인데
+                                    연결고리의 키 컬럼을 기준으로 정렬까지 해서 결과를 
+                                    봐야할 때 유용한 조인방법 
+
+    2. 조인 순서 :   
+
+          1. ordered 힌트:  from 절에서 기술한 테이블 순서데로 조인해라 !
+          2. leading 힌트:   leading 힌트 안에 쓴 테이블 순서데로 조인해라 !
+
+■ 실습1.  emp 와 dept 를 조인해서 이름과 부서위치를 출력하시오 !
+
+ @demo
+
+  select  e.ename, d.loc
+   from  emp   e,  dept   d
+   where  e.deptno = d.deptno ;
+
+관련 그림 :  pdf 자료 100 페이지 그림 
+
+관련 설명 :  emp ---> dept 순으로 조인하면 14번 조인 시도를 해야하는데
+                dept ---> emp 순으로 조인하면 4번 조인 시도 하면 됩니다. 
+
+■ 실습2.  leading 힌트를 이용해서 아래의 2개의 조인순서를 조정하여 버퍼의 갯수를
+              비교하시오 !
+
+  1.  emp ------------> dept
+  2.  dept ------------> emp
+
+ select  /*+  leading(e  d)  use_nl(d)  */  e.ename, d.loc
+   from  emp  e,  dept   d
+   where  e.deptno = d.deptno ; 
+
+  emp ---> dept 순으로 조인하면서 dept 테이블이랑 nested  loop을 조인을 하는겁니다.
+  버퍼의 갯수가 105개 입니다. 
+
+  이번에는 dept ---> emp 순으로 조인되게 하세요 !
+
+ select  /*+  leading(d  e)  use_nl(e)  */  e.ename, d.loc
+   from  emp  e,  dept   d
+   where  e.deptno = d.deptno ; 
+
+  35개로 버퍼의  갯수가 줄어들었습니다. 
+
+문제46. 아래의 SQL을 튜닝하시오 !  조인방법은 그대로 두고 조인 순서만 변경하시오 !
+
+튜닝전 :    select  /*+  leading(e  s)  use_nl(s)  */   e.ename,  e.sal, s.grade
+                 from  emp  e,  salgrade   s
+                where   e.sal   between  s.losal   and  s.hisal ;
+
+튜닝후 : 
+
